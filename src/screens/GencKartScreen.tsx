@@ -2,17 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowUpRight, MapPin } from 'lucide-react-native';
+import { ArrowUpRight, MapPin, Wifi } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_USER, MOCK_PARTNERS } from '@/api/mockData';
 import { DiscountPartner } from '@/types';
+import { UrfaIcon_Balik, UrfaIcon_Gobeklitepe, UrfaIcon_Harran } from '@/components/icons/Custom/UrfaIcons';
 
-// Artık bu ICONS listesine ihtiyacımız yok, çünkü ikonlar veriden geliyor.
-// const ICONS = { ... }
 
 const GencKartScreen = () => {
   const renderPartnerItem = (item: DiscountPartner) => {
-    // İkonu artık doğrudan veriden alıyoruz
     const Icon = item.icon; 
     return (
         <View style={styles.partnerCard}>
@@ -41,11 +39,32 @@ const GencKartScreen = () => {
 
             {/* Genç Kart */}
             <LinearGradient
-                colors={['#2A2D48', '#22243C']}
+                colors={['#374151', '#581c87', '#0f172a']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.gencKart}
             >
-                {/* This View would be for the pattern overlay if we had an image */}
-                <View style={StyleSheet.absoluteFill} />
+                {/* Urfa Pattern Overlay - GÜLSÜZ VERSİYON */}
+                <View style={styles.patternContainer}>
+                    {/* Arka plan büyük elemanlar */}
+                    <UrfaIcon_Gobeklitepe size={85} opacity={0.15} style={{ position: 'absolute', top: 50, right: 15, transform: [{ rotate: '-15deg' }] }} />
+                    <UrfaIcon_Harran size={75} opacity={0.12} style={{ position: 'absolute', bottom: 5, left: 10, transform: [{ rotate: '10deg' }] }} />
+
+                    {/* Orta katman elemanlar */}
+                    <UrfaIcon_Balik size={60} opacity={0.2} style={{ position: 'absolute', top: 15, left: 20, transform: [{ rotate: '25deg' }] }} />
+                    <UrfaIcon_Balik size={50} opacity={0.18} style={{ position: 'absolute', bottom: 25, right: -10, transform: [{ rotate: '-20deg' }] }} />
+
+                    {/* Küçük dolgu elemanları */}
+                    <UrfaIcon_Gobeklitepe size={40} opacity={0.1} style={{ position: 'absolute', bottom: 85, left: 95, transform: [{ rotate: '20deg' }] }} />
+                    <UrfaIcon_Balik size={35} opacity={0.15} style={{ position: 'absolute', top: 10, right: 100, transform: [{ rotate: '-5deg' }] }} />
+                    <UrfaIcon_Harran size={45} opacity={0.12} style={{ position: 'absolute', bottom: 10, right: 130, transform: [{ rotate: '45deg' }] }} />
+                    
+                    {/* EKSTRA DOLGU ELEMANLARI */}
+                    <UrfaIcon_Harran size={35} opacity={0.08} style={{ position: 'absolute', top: 90, left: 15, transform: [{ rotate: '-10deg' }] }} />
+                    <UrfaIcon_Balik size={25} opacity={0.1} style={{ position: 'absolute', bottom: 60, right: 80, transform: [{ rotate: '30deg' }] }} />
+                    <UrfaIcon_Gobeklitepe size={30} opacity={0.1} style={{ position: 'absolute', top: 5, left: 120, transform: [{ rotate: '15deg' }] }} />
+                </View>
+
                 <View style={styles.cardTop}>
                     <View>
                         <View style={styles.cardLogoContainer}>
@@ -54,7 +73,10 @@ const GencKartScreen = () => {
                         </View>
                         <Text style={styles.cardAgeText}>◎ 16-30 YAŞ</Text>
                     </View>
-                    <Text style={styles.cardYear}>2024</Text>
+                    <View style={styles.contactlessContainer}>
+                        <Wifi color="rgba(255,255,255,0.6)" size={24} style={{ transform: [{ rotate: '90deg' }] }} />
+                        <Text style={styles.cardYear}>2025</Text>
+                    </View>
                 </View>
 
                 <View style={styles.cardBottom}>
@@ -63,7 +85,6 @@ const GencKartScreen = () => {
                         <Text style={styles.cardHolderName}>MERT YILMAZ</Text>
                         <Text style={styles.cardId}>TR-63-9921</Text>
                     </View>
-                    <Image source={{ uri: 'https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=sanligenc&bgcolor=22243C&color=FFFFFF&qzone=1' }} style={styles.qrCode}/>
                 </View>
             </LinearGradient>
 
@@ -74,7 +95,6 @@ const GencKartScreen = () => {
             </View>
 
             <View style={styles.listContainer}>
-                {/* Her bir elemana doğrudan key veriyoruz */}
                 {MOCK_PARTNERS.map((item) => (
                     <View key={item.id}>
                         {renderPartnerItem(item)}
@@ -89,7 +109,7 @@ const GencKartScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA', // A slightly different light gray
+    backgroundColor: '#F7F8FA',
   },
   header: {
       paddingHorizontal: 20,
@@ -111,12 +131,20 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     padding: 20,
     height: 210,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  patternContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+    overflow: 'hidden',
   },
   cardTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
+      zIndex: 1,
   },
   cardLogoContainer: {
       flexDirection: 'row',
@@ -134,6 +162,10 @@ const styles = StyleSheet.create({
       marginLeft: 22,
       marginTop: 2
   },
+  contactlessContainer: {
+      alignItems: 'flex-end',
+      gap: 5
+  },
   cardYear: {
       color: Colors.white,
       backgroundColor: 'rgba(255,255,255,0.1)',
@@ -148,6 +180,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-end',
+      zIndex: 1,
   },
   cardHolderLabel: {
       color: '#9ca3af',
@@ -163,10 +196,6 @@ const styles = StyleSheet.create({
       color: '#9ca3af',
       fontSize: 12,
       marginTop: 2
-  },
-  qrCode: {
-      width: 80,
-      height: 80,
   },
   listHeader: {
       flexDirection: 'row',

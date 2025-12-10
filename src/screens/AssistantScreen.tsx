@@ -1,67 +1,99 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SendHorizonal } from 'lucide-react-native';
+import { SendHorizonal, Bot } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { MOCK_MESSAGES } from '@/api/mockData';
 import { ChatMessage } from '@/types';
 
+const QUICK_START_SUGGESTIONS = [
+  "Bugün Urfa'da ne yapılır?",
+  "En yakın otobüs durağı nerede?",
+  "Genç Kart avantajları neler?",
+  "Bana bir fıkra anlat.",
+];
+
 const AssistantScreen = () => {
+  const [messages, setMessages] = useState(MOCK_MESSAGES.slice().reverse()); // reverse for inverted FlatList
+  const flatListRef = useRef<FlatList>(null);
+
   const renderMessageItem = ({ item }: { item: ChatMessage }) => (
     <View style={[
       styles.bubbleContainer,
       item.sender === 'user' ? styles.userBubbleContainer : styles.botBubbleContainer
     ]}>
-      <View style={[
-        styles.bubble,
-        item.sender === 'user' ? styles.userBubble : styles.botBubble
-      ]}>
+      {item.sender === 'bot' && <View style={styles.botAvatar}><Bot color={Colors.primary.indigo} size={20} /></View>}
+      <LinearGradient
+        colors={item.sender === 'user' ? [Colors.primary.indigo, Colors.primary.violet] : ['#ffffff', '#f9fafb']}
+        style={[
+          styles.bubble,
+          item.sender === 'user' ? styles.userBubble : styles.botBubble
+        ]}
+      >
         <Text style={item.sender === 'user' ? styles.userBubbleText : styles.botBubbleText}>
           {item.text}
         </Text>
-      </View>
-      <Text style={styles.timestamp}>{item.timestamp}</Text>
+      </LinearGradient>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-            <Text style={styles.headerTitle}>ŞanlıAsistan</Text>
-            <View style={styles.onlineContainer}>
-                <View style={styles.onlineIndicator} />
-                <Text style={styles.onlineText}>Online</Text>
-            </View>
-        </View>
+      <View style={styles.bubblePage}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.keyboardAvoidingView}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // Adjusted for the tab bar
+        >
+          {/* Header */}
+          <View style={styles.header}>
+              <Text style={styles.headerTitle}>ŞanlıAsistan</Text>
+              <Text style={styles.headerSubtitle}>Sana nasıl yardımcı olabilirim?</Text>
+          </View>
+          
+          {/* Quick Start Suggestions */}
+          <View>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.quickStartContainer}
+            >
+              {QUICK_START_SUGGESTIONS.map((text, index) => (
+                <TouchableOpacity key={index} style={styles.quickStartChip}>
+                  <Text style={styles.quickStartText}>{text}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
-        {/* Chat Area */}
-        <FlatList
-          data={MOCK_MESSAGES}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.chatContainer}
-          showsVerticalScrollIndicator={false}
-          inverted // So messages start from the bottom
-        />
-
-        {/* Input */}
-        <View style={styles.inputContainer}>
-          <TextInput
-            placeholder="Mesaj yaz..."
-            style={styles.input}
-            placeholderTextColor="#9ca3af"
+          {/* Chat Area */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessageItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.chatContainer}
+            showsVerticalScrollIndicator={false}
+            inverted 
+            style={{ flex: 1 }}
           />
-          <TouchableOpacity style={styles.sendButton}>
-            <SendHorizonal color={Colors.white} size={24} />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+
+          {/* Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Mesajını buraya yaz..."
+              style={styles.input}
+              placeholderTextColor="#9ca3af"
+            />
+            <TouchableOpacity style={styles.sendButton}>
+               <LinearGradient colors={[Colors.primary.indigo, Colors.primary.violet]} style={styles.sendButtonGradient}>
+                  <SendHorizonal color={Colors.white} size={24} />
+               </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -69,73 +101,93 @@ const AssistantScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: Colors.lightGray,
+  },
+  bubblePage: {
+    flex: 1,
+    backgroundColor: 'white',
+    marginHorizontal: 10,
+    marginBottom: 95, // Critical: Lifts the page above the tab bar
+    borderRadius: 30,
+    overflow: 'hidden', // Ensures children conform to the bubble shape
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
   },
   keyboardAvoidingView: {
     flex: 1,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: 20, // Increased top padding
+    paddingBottom: 15,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.darkGray,
   },
-  onlineContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e0f2fe',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
+  headerSubtitle: {
+      fontSize: 16,
+      color: '#6b7280',
+      marginTop: 2,
   },
-  onlineIndicator: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: '#0284c7',
-      marginRight: 6,
+  quickStartContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    gap: 10,
   },
-  onlineText: {
-    color: '#0369a1',
-    fontWeight: '600'
+  quickStartChip: {
+    backgroundColor: Colors.lightGray, // Changed color to match background
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  quickStartText: {
+    color: Colors.darkGray,
+    fontWeight: '500',
   },
   chatContainer: {
     paddingHorizontal: 15,
     flexGrow: 1,
-    flexDirection: 'column-reverse' // So messages start from the bottom
+    paddingBottom: 10, // Reset this
   },
   bubbleContainer: {
     marginVertical: 10,
     maxWidth: '80%',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
   },
   userBubbleContainer: {
     alignSelf: 'flex-end',
-    alignItems: 'flex-end',
   },
   botBubbleContainer: {
     alignSelf: 'flex-start',
-    alignItems: 'flex-start',
+  },
+  botAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e0e7ff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bubble: {
     padding: 15,
     borderRadius: 20,
   },
   userBubble: {
-    backgroundColor: Colors.primary.indigo,
     borderBottomRightRadius: 5,
   },
   botBubble: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.lightGray, // Bot bubble color changed
     borderBottomLeftRadius: 5,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   userBubbleText: {
     color: Colors.white,
@@ -145,37 +197,36 @@ const styles = StyleSheet.create({
     color: Colors.darkGray,
     fontSize: 16,
   },
-  timestamp: {
-      fontSize: 12,
-      color: '#9ca3af',
-      marginTop: 5,
-  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    backgroundColor: '#F7F8FA',
+    borderTopColor: '#f3f4f6', // Lighter border
   },
   input: {
     flex: 1,
     height: 50,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.lightGray, // Changed input color
     borderRadius: 25,
     paddingHorizontal: 20,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderWidth: 0, // Removed border
     marginRight: 10,
   },
   sendButton: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      backgroundColor: Colors.primary.indigo,
-      justifyContent: 'center',
-      alignItems: 'center',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
   }
 });
 
