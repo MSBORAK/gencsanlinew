@@ -11,7 +11,8 @@ import AssistantScreen from '@/screens/AssistantScreen';
 import ProfileScreen from '@/screens/ProfileScreen';
 import EventsScreen from '@/screens/EventsScreen';
 import MagazineScreen from '@/screens/MagazineScreen';
-import RewardsScreen from '@/screens/RewardsScreen';
+import PartnerDetailScreen from '@/screens/PartnerDetailScreen';
+import WelcomeScreen from '@/screens/WelcomeScreen';
 
 // Custom Tab Bar
 import CustomTabBar from './CustomTabBar';
@@ -37,11 +38,15 @@ const MainTabs = () => {
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        initialRouteName="Welcome"
+        screenOptions={{ headerShown: false }}
+      >
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
         <Stack.Screen name="Events" component={EventsScreen} />
         <Stack.Screen name="Magazine" component={MagazineScreen} />
-        <Stack.Screen name="Rewards" component={RewardsScreen} />
+        <Stack.Screen name="PartnerDetail" component={PartnerDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

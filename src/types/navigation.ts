@@ -13,10 +13,12 @@ export type MainTabParamList = {
 
 // Ana Stack Navigasyonun Ekranları
 export type RootStackParamList = {
+  Welcome: undefined;
   Main: NavigatorScreenParams<MainTabParamList>; // Tab menüsünü bir ekran olarak içerir
   Events: undefined;
   Magazine: undefined;
   Rewards: undefined;
+  PartnerDetail: { partnerId: string };
 };
 
 // HomeScreen için özel tip oluşturma. Bu, hem Stack hem de Tab tiplerini birleştirir.

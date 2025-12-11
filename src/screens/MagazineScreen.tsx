@@ -21,6 +21,7 @@ const MagazineScreen = () => {
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.heritageCard}>
               <Image source={{ uri: item.image }} style={styles.heritageImage} />
+              <View style={styles.heritageOverlay} />
               <View style={styles.heritageTextContainer}>
                 <Text style={styles.heritageTitle}>{item.title}</Text>
               </View>
@@ -86,24 +87,36 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
   },
   heritageCard: {
-    width: 160,
-    marginRight: 15,
-    backgroundColor: Colors.white,
+    width: 220,
+    height: 160,
+    marginRight: 16,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
     overflow: 'hidden',
+    backgroundColor: Colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
   },
   heritageImage: {
     width: '100%',
-    height: 120,
+    height: '100%',
+  },
+  heritageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   heritageTextContainer: {
-      padding: 10,
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
   },
   heritageTitle: {
-    fontWeight: '600',
-    color: Colors.darkGray
+    fontWeight: '700',
+    color: Colors.white,
+    fontSize: 16,
   },
   eDergiCard: {
     height: 200,

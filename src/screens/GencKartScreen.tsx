@@ -7,13 +7,20 @@ import { Colors } from '@/constants/Colors';
 import { MOCK_USER, MOCK_PARTNERS } from '@/api/mockData';
 import { DiscountPartner } from '@/types';
 import { UrfaIcon_Balik, UrfaIcon_Gobeklitepe, UrfaIcon_Harran } from '@/components/icons/Custom/UrfaIcons';
+import { useNavigation } from '@react-navigation/native';
+import type { RootStackParamList } from '@/types/navigation';
+import type { StackNavigationProp } from '@react-navigation/stack';
 
+
+type Nav = StackNavigationProp<RootStackParamList>;
 
 const GencKartScreen = () => {
+  const navigation = useNavigation<Nav>();
+
   const renderPartnerItem = (item: DiscountPartner) => {
     const Icon = item.icon; 
     return (
-        <View style={styles.partnerCard}>
+        <TouchableOpacity style={styles.partnerCard} activeOpacity={0.9} onPress={() => navigation.navigate('PartnerDetail', { partnerId: item.id })}>
             <View style={[styles.partnerIconContainer, { backgroundColor: item.bgColor }]}>
                 <Icon color={item.iconColor} size={24}/>
             </View>
@@ -22,10 +29,8 @@ const GencKartScreen = () => {
                 <Text style={styles.partnerOffer}>{item.offer}</Text>
                 <Text style={styles.partnerDesc}>{item.description}</Text>
             </View>
-            <TouchableOpacity>
-                <ArrowUpRight color={Colors.darkGray} size={24} />
-            </TouchableOpacity>
-        </View>
+            <ArrowUpRight color={Colors.darkGray} size={24} />
+        </TouchableOpacity>
     )
   };
 
@@ -44,7 +49,7 @@ const GencKartScreen = () => {
                 end={{ x: 1, y: 1 }}
                 style={styles.gencKart}
             >
-                {/* Urfa Pattern Overlay - GÜLSÜZ VERSİYON */}
+                {/* Urfa Pattern Overlay - GÜLSÜZ & YOĞUN VERSİYON */}
                 <View style={styles.patternContainer}>
                     {/* Arka plan büyük elemanlar */}
                     <UrfaIcon_Gobeklitepe size={85} opacity={0.15} style={{ position: 'absolute', top: 50, right: 15, transform: [{ rotate: '-15deg' }] }} />
@@ -59,10 +64,27 @@ const GencKartScreen = () => {
                     <UrfaIcon_Balik size={35} opacity={0.15} style={{ position: 'absolute', top: 10, right: 100, transform: [{ rotate: '-5deg' }] }} />
                     <UrfaIcon_Harran size={45} opacity={0.12} style={{ position: 'absolute', bottom: 10, right: 130, transform: [{ rotate: '45deg' }] }} />
                     
-                    {/* EKSTRA DOLGU ELEMANLARI */}
+                    {/* --- İLK EKLEME --- */}
                     <UrfaIcon_Harran size={35} opacity={0.08} style={{ position: 'absolute', top: 90, left: 15, transform: [{ rotate: '-10deg' }] }} />
                     <UrfaIcon_Balik size={25} opacity={0.1} style={{ position: 'absolute', bottom: 60, right: 80, transform: [{ rotate: '30deg' }] }} />
                     <UrfaIcon_Gobeklitepe size={30} opacity={0.1} style={{ position: 'absolute', top: 5, left: 120, transform: [{ rotate: '15deg' }] }} />
+                    <UrfaIcon_Balik size={30} opacity={0.07} style={{ position: 'absolute', top: 120, right: 100, transform: [{ rotate: '-30deg' }] }} />
+                    <UrfaIcon_Harran size={25} opacity={0.09} style={{ position: 'absolute', top: 140, left: 50, transform: [{ rotate: '15deg' }] }} />
+                    <UrfaIcon_Gobeklitepe size={20} opacity={0.12} style={{ position: 'absolute', bottom: 5, right: 70, transform: [{ rotate: '-5deg' }] }} />
+
+                    {/* --- İKİNCİ EKLEME (DAHA FAZLA YOĞUNLUK) --- */}
+                    <UrfaIcon_Balik size={22} opacity={0.15} style={{ position: 'absolute', top: 80, right: 90, transform: [{ rotate: '180deg' }] }} />
+                    <UrfaIcon_Gobeklitepe size={28} opacity={0.1} style={{ position: 'absolute', bottom: 60, left: 30, transform: [{ rotate: '-25deg' }] }} />
+                    <UrfaIcon_Harran size={33} opacity={0.11} style={{ position: 'absolute', top: 40, left: 150, transform: [{ rotate: '35deg' }] }} />
+
+                    {/* --- ÜÇÜNCÜ EKLEME (SON DOKUNUŞLAR) --- */}
+                    <UrfaIcon_Gobeklitepe size={25} opacity={0.06} style={{ position: 'absolute', top: 130, left: 140, transform: [{ rotate: '-10deg' }] }} />
+                    <UrfaIcon_Balik size={20} opacity={0.08} style={{ position: 'absolute', bottom: 45, left: 160, transform: [{ rotate: '10deg' }] }} />
+                    
+                    {/* --- DÖRDÜNCÜ EKLEME (MAKSİMUM YOĞUNLUK) --- */}
+                    <UrfaIcon_Harran size={20} opacity={0.1} style={{ position: 'absolute', top: 160, right: 40, transform: [{ rotate: '-40deg' }] }} />
+                    <UrfaIcon_Balik size={28} opacity={0.12} style={{ position: 'absolute', top: 60, left: 60, transform: [{ rotate: '60deg' }] }} />
+                    <UrfaIcon_Gobeklitepe size={26} opacity={0.09} style={{ position: 'absolute', bottom: 90, right: 140, transform: [{ rotate: '5deg' }] }} />
                 </View>
 
                 <View style={styles.cardTop}>
@@ -91,7 +113,7 @@ const GencKartScreen = () => {
             {/* Partner List */}
             <View style={styles.listHeader}>
                 <Text style={styles.sectionTitle}>Anlaşmalı Mekanlar</Text>
-                <Text style={styles.firsatCount}>4 Fırsat</Text>
+                <Text style={styles.firsatCount}>{MOCK_PARTNERS.length} Fırsat</Text>
             </View>
 
             <View style={styles.listContainer}>

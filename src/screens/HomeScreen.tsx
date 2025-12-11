@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import { Calendar, Zap, BookOpen, MessageSquare, User, Megaphone, Palette, Bus, Users, Sun, Flame } from 'lucide-react-native';
+import { Calendar, BookOpen, MessageSquare, User, Megaphone, Palette, Bus, Users, Sun, Flame, QrCode } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Colors } from '@/constants/Colors';
-import { MOCK_USER } from '@/api/mockData';
+import { MOCK_USER, MOCK_BUSES } from '@/api/mockData';
 import { HomeScreenProps, MainTabParamList } from '@/types/navigation'; // MainTabParamList'i import ediyoruz
 
 const HEADER_NAV = [
@@ -19,26 +19,31 @@ const HEADER_NAV = [
 
 const QUICK_ACCESS_NAV = [
     { name: 'Etkinlik', icon: Calendar, color: '#fee2e2', iconColor: '#ef4444', screen: 'Events', type: 'stack' },
-    { name: 'Fırsatlar', icon: Zap, color: '#ffedd5', iconColor: '#f97316', screen: 'Rewards', type: 'stack' },
     { name: 'Keşfet', icon: BookOpen, color: '#dbeafe', iconColor: '#3b82f6', screen: 'Magazine', type: 'stack' },
-    { name: 'Asistan', icon: MessageSquare, color: '#e0e7ff', iconColor: '#4f46e5', screen: 'Assistant', type: 'tab' },
-]
+    { name: 'Genç Kart', icon: QrCode, color: '#e0e7ff', iconColor: Colors.primary.indigo, screen: 'GencKart', type: 'tab' },
+];
 
 const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenProps['navigation']>();
+  const nextBus = MOCK_BUSES[0];
 
   const handleNavigation = (item: typeof QUICK_ACCESS_NAV[0]) => {
       if(item.type === 'tab') {
           // Tip güvenliği için ekran adını MainTabParamList'ten geldiğini belirtiyoruz
           navigation.navigate('Main', { screen: item.screen as keyof MainTabParamList });
       } else {
-          navigation.navigate(item.screen as 'Events' | 'Rewards' | 'Magazine');
+          navigation.navigate(item.screen as 'Events' | 'Magazine');
       }
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.root}>
+      {/* Sadece status bar alanı mor */}
+      <SafeAreaView style={styles.statusBarArea} edges={['top']} />
+
+      {/* İçerik kısmı eski haliyle açık gri */}
+      <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+        <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
           colors={[Colors.primary.violet, Colors.primary.indigo]}
@@ -70,20 +75,36 @@ const HomeScreen = () => {
           </View>
         </LinearGradient>
 
-        {/* Floating Stats Card */}
-        <View style={styles.statsCard}>
-            <TouchableOpacity style={styles.statsLeft}>
-                <Text style={styles.statsTitle}>GENÇ KART</Text>
-                <Text style={styles.statsValue}>Göster & Geç</Text>
-            </TouchableOpacity>
-            <View style={styles.statsDivider} />
-            <TouchableOpacity style={styles.statsRight}>
-                <Text style={styles.statsTitle}>DURAK</Text>
-                <Text style={styles.statsValue}>Osmanbey</Text>
-            </TouchableOpacity>
-        </View>
+        {/* Dashboard alanı */}
+        <View style={styles.dashboardInner}>
+          {/* Floating summary card: Genç Kart + Sıradaki Otobüs */}
+          <View style={styles.statsCard}>
+              <TouchableOpacity
+                style={styles.statsLeft}
+                activeOpacity={0.9}
+                onPress={() =>
+                  navigation.navigate('Main', { screen: 'GencKart' as keyof MainTabParamList })
+                }
+              >
+                  <Text style={styles.statsTitle}>GENÇ KART</Text>
+                  <Text style={styles.statsValue}>Göster & Geç</Text>
+              </TouchableOpacity>
+              <View style={styles.statsDivider} />
+              <TouchableOpacity
+                style={styles.statsRight}
+                activeOpacity={0.9}
+                onPress={() =>
+                  navigation.navigate('Main', { screen: 'Transport' as keyof MainTabParamList })
+                }
+              >
+                  <Text style={styles.statsTitle}>SIRADAKİ OTOBÜS</Text>
+                  <Text style={styles.statsValue}>
+                    {nextBus.lineNumber} • {nextBus.arrivalTime} dk
+                  </Text>
+              </TouchableOpacity>
+          </View>
 
-        <View style={styles.content}>
+          <View style={styles.content}>
             {/* Quick Access */}
             <Text style={styles.sectionTitle}>HIZLI ERİŞİM</Text>
             <View style={styles.quickAccessContainer}>
@@ -121,21 +142,27 @@ const HomeScreen = () => {
 
                 {/* Quote of the day Widget */}
                 <TouchableOpacity style={[styles.widgetCard, styles.quoteCard]}>
-                    <Text style={styles.widgetLabel}>GÜNÜN SÖZÜ</Text>
+                    <Text style={[styles.widgetLabel, styles.widgetLabelQuote]}>GÜNÜN SÖZÜ</Text>
                     <Flame color={Colors.accent.rose} size={32} />
                     <Text style={styles.quoteText}>"Bugün Urfa'yı keşfet!"</Text>
                 </TouchableOpacity>
             </View>
-            
+          </View>
         </View>
 
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: Colors.primary.violet },
+    statusBarArea: { backgroundColor: Colors.primary.violet },
     container: { flex: 1, backgroundColor: Colors.lightGray },
+    dashboardInner: {
+      paddingBottom: 24,
+    },
     header: { borderBottomLeftRadius: 40, borderBottomRightRadius: 40, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },
     headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     badge: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
@@ -206,8 +233,12 @@ const styles = StyleSheet.create({
     weatherCard: { justifyContent: 'space-between', flexDirection: 'row' },
     weatherTemp: { color: Colors.white, fontSize: 36, fontWeight: 'bold' },
     weatherDesc: { color: Colors.white, fontWeight: '600' },
-    quoteCard: { backgroundColor: Colors.white },
-    quoteText: { marginTop: 10, fontSize: 16, fontWeight: '600', color: Colors.darkGray },
+    quoteCard: { 
+      backgroundColor: '#c7d2fe', // daha koyu mor ton
+      borderRadius: 20,
+    },
+    widgetLabelQuote: { color: Colors.primary.indigo },
+    quoteText: { marginTop: 10, fontSize: 16, fontWeight: '600', color: '#111827' },
 });
 
 export default HomeScreen;
