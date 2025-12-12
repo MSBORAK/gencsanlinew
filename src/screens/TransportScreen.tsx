@@ -5,6 +5,7 @@ import { Search, MapPin, Star } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_BUSES } from '@/api/mockData';
 import { Bus } from '@/types';
+import { useThemeMode } from '@/context/ThemeContext';
 
 const FAVORITE_STOPS = [
   { id: '1', name: 'Abide Durağı', lines: '63, 73, 90' },
@@ -13,18 +14,23 @@ const FAVORITE_STOPS = [
 ];
 
 const TransportScreen = () => {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const [selectedArea, setSelectedArea] = useState('Osmanbey');
 
   const filteredBuses: Bus[] = MOCK_BUSES; // İleride alana göre filtre eklenebilir
 
   return (
-    <SafeAreaView style={styles.root} edges={['top']}>
+    <SafeAreaView
+      style={[styles.root, isDark && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          {/* Header */}
+        {/* Header */}
           <View style={styles.headerRow}>
             <View>
               <Text style={styles.title}>Ulaşım Rehberi</Text>
@@ -32,6 +38,25 @@ const TransportScreen = () => {
             </View>
             <View style={styles.headerIcon}>
               <MapPin color={Colors.primary.indigo} size={22} />
+            </View>
+          </View>
+
+          {/* Mini Map Preview (Mock) */}
+          <View style={styles.mapPreview}>
+            <View style={styles.mapBackground}>
+              <View style={styles.mapCircleLarge} />
+              <View style={styles.mapCircleSmall} />
+              <View style={styles.mapRouteLine} />
+            </View>
+            <View style={styles.mapOverlayRow}>
+              <View style={styles.mapLocationPill}>
+                <MapPin color={Colors.primary.indigo} size={16} />
+                <Text style={styles.mapLocationText}>Konumun: Şanlıurfa Merkez</Text>
+              </View>
+              <View style={styles.mapStopPill}>
+                <Text style={styles.mapStopLabel}>En yakın durak</Text>
+                <Text style={styles.mapStopValue}>Abide Durağı</Text>
+              </View>
             </View>
           </View>
 
@@ -188,6 +213,83 @@ const styles = StyleSheet.create({
     backgroundColor: '#eef2ff',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mapPreview: {
+    height: 120,
+    borderRadius: 20,
+    marginBottom: 16,
+    overflow: 'hidden',
+    backgroundColor: '#e5f2ff',
+  },
+  mapBackground: {
+    flex: 1,
+    backgroundColor: '#dbeafe',
+  },
+  mapCircleLarge: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 2,
+    borderColor: 'rgba(59,130,246,0.4)',
+    top: 10,
+    left: 30,
+  },
+  mapCircleSmall: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1d4ed8',
+    top: 40,
+    left: 80,
+  },
+  mapRouteLine: {
+    position: 'absolute',
+    height: 2,
+    width: 140,
+    backgroundColor: 'rgba(59,130,246,0.6)',
+    top: 70,
+    left: 40,
+  },
+  mapOverlayRow: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  mapLocationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+  },
+  mapLocationText: {
+    marginLeft: 6,
+    fontSize: 12,
+    color: '#111827',
+    fontWeight: '500',
+  },
+  mapStopPill: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(15,118,110,0.1)',
+  },
+  mapStopLabel: {
+    fontSize: 10,
+    color: '#0f766e',
+  },
+  mapStopValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0f766e',
   },
   searchContainer: {
     flexDirection: 'row',

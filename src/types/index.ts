@@ -50,7 +50,9 @@ export interface Event {
 export interface Magazine {
   id: string;
   title: string;
-  image: string;
+  image: any; // URL string or local require source
+  description?: string;
+  category?: 'historic' | 'museum' | 'nature';
 }
 
 export interface Bulletin {
@@ -71,4 +73,13 @@ export interface PointsHistory {
     description: string;
     points: number;
     date: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: 'event' | 'discount';
+  createdAt: string;
+  isRead?: boolean;
 }

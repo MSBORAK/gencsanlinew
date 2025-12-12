@@ -18,7 +18,9 @@ export type RootStackParamList = {
   Events: undefined;
   Magazine: undefined;
   Rewards: undefined;
+  Notifications: undefined;
   PartnerDetail: { partnerId: string };
+   HeritageDetail: { id: string };
 };
 
 // HomeScreen için özel tip oluşturma. Bu, hem Stack hem de Tab tiplerini birleştirir.

@@ -1,32 +1,128 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Download, ChevronRight } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_MAGAZINES, MOCK_BULLETINS } from '@/api/mockData';
+import DergiCover from '@/assets/images/dergi.png';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '@/types/navigation';
+import { useThemeMode } from '@/context/ThemeContext';
+
+type Nav = StackNavigationProp<RootStackParamList>;
 
 const MagazineScreen = () => {
+  const navigation = useNavigation<Nav>();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'historic' | 'museum' | 'nature'>('all');
+
+  const filteredMagazines = useMemo(
+    () =>
+      selectedCategory === 'all'
+        ? MOCK_MAGAZINES
+        : MOCK_MAGAZINES.filter((item) => item.category === selectedCategory),
+    [selectedCategory]
+  );
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, isDark && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
       <ScrollView>
         <View style={styles.header}>
-            <Text style={styles.headerTitle}>Keşfet</Text>
+          <Text style={styles.headerTitle}>Keşfet</Text>
         </View>
 
-        {/* Tarihi Mirasımız */}
+        {/* Tarihi Mirasımız / Şanlıurfa Keşfet */}
         <Text style={styles.sectionTitle}>Tarihi Mirasımız</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryRow}
+        >
+          <TouchableOpacity
+            style={[styles.categoryChip, selectedCategory === 'all' && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory('all')}
+            activeOpacity={0.9}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                selectedCategory === 'all' && styles.categoryChipTextActive,
+              ]}
+            >
+              Tümü
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.categoryChip, selectedCategory === 'historic' && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory('historic')}
+            activeOpacity={0.9}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                selectedCategory === 'historic' && styles.categoryChipTextActive,
+              ]}
+            >
+              Tarihi Yerler
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.categoryChip, selectedCategory === 'museum' && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory('museum')}
+            activeOpacity={0.9}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                selectedCategory === 'museum' && styles.categoryChipTextActive,
+              ]}
+            >
+              Müzeler
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.categoryChip, selectedCategory === 'nature' && styles.categoryChipActive]}
+            onPress={() => setSelectedCategory('nature')}
+            activeOpacity={0.9}
+          >
+            <Text
+              style={[
+                styles.categoryChipText,
+                selectedCategory === 'nature' && styles.categoryChipTextActive,
+              ]}
+            >
+              Doğa &amp; Parklar
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+
         <FlatList
           horizontal
-          data={MOCK_MAGAZINES}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.heritageCard}>
-              <Image source={{ uri: item.image }} style={styles.heritageImage} />
-              <View style={styles.heritageOverlay} />
-              <View style={styles.heritageTextContainer}>
-                <Text style={styles.heritageTitle}>{item.title}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
+          data={filteredMagazines}
+          renderItem={({ item }) => {
+            const imageSource = typeof item.image === 'string'
+              ? { uri: item.image }
+              : item.image;
+
+            return (
+              <TouchableOpacity
+                style={styles.heritageCard}
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate('HeritageDetail', { id: item.id })}
+              >
+                <Image source={imageSource} style={styles.heritageImage} />
+                <View style={styles.heritageOverlay} />
+                <View style={styles.heritageTextContainer}>
+                  <Text style={styles.heritageTitle}>{item.title}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          }}
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.horizontalList}
@@ -36,7 +132,7 @@ const MagazineScreen = () => {
         <Text style={styles.sectionTitle}>E-Dergi</Text>
         <TouchableOpacity style={styles.eDergiCard}>
           <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1593839238634-2b744a8677f5?q=80&w=2574&auto.format&fit=crop' }} 
+            source={DergiCover}
             style={styles.eDergiImage} 
           />
         </TouchableOpacity>
@@ -154,7 +250,33 @@ const styles = StyleSheet.create({
       fontSize: 16,
       marginLeft: 15,
       color: Colors.darkGray
-  }
+  },
+  categoryRow: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginRight: 8,
+    backgroundColor: '#f9fafb',
+  },
+  categoryChipActive: {
+    backgroundColor: Colors.primary.indigo,
+    borderColor: Colors.primary.indigo,
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  categoryChipTextActive: {
+    color: Colors.white,
+    fontWeight: '600',
+  },
 });
 
 export default MagazineScreen;

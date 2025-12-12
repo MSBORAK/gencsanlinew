@@ -1,46 +1,185 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SendHorizonal, Bot } from 'lucide-react-native';
+import { SendHorizonal, Bot, MapPin, TicketPercent, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { MOCK_MESSAGES } from '@/api/mockData';
 import { ChatMessage } from '@/types';
+import { useThemeMode } from '@/context/ThemeContext';
 
-const QUICK_START_SUGGESTIONS = [
-  "Bugün Urfa'da ne yapılır?",
-  "En yakın otobüs durağı nerede?",
-  "Genç Kart avantajları neler?",
-  "Bana bir fıkra anlat.",
+const QUICK_ACTIONS = [
+  {
+    id: 'bus',
+    label: '📍 Otobüs Saatleri',
+    text: 'Otobüs saatlerini öğrenmek istiyorum.',
+    icon: MapPin,
+  },
+  {
+    id: 'discounts',
+    label: '🎫 İndirimler',
+    text: 'Genç Kart ile nerelerde indirim var?',
+    icon: TicketPercent,
+  },
+  {
+    id: 'events',
+    label: '🎉 Etkinlikler',
+    text: 'Bugün veya yakında hangi etkinlikler var?',
+    icon: Sparkles,
+  },
 ];
 
-const AssistantScreen = () => {
-  const [messages, setMessages] = useState(MOCK_MESSAGES.slice().reverse()); // reverse for inverted FlatList
-  const flatListRef = useRef<FlatList>(null);
+const TYPING_DELAY_MS = 900;
 
-  const renderMessageItem = ({ item }: { item: ChatMessage }) => (
-    <View style={[
-      styles.bubbleContainer,
-      item.sender === 'user' ? styles.userBubbleContainer : styles.botBubbleContainer
-    ]}>
-      {item.sender === 'bot' && <View style={styles.botAvatar}><Bot color={Colors.primary.indigo} size={20} /></View>}
-      <LinearGradient
-        colors={item.sender === 'user' ? [Colors.primary.indigo, Colors.primary.violet] : ['#ffffff', '#f9fafb']}
-        style={[
-          styles.bubble,
-          item.sender === 'user' ? styles.userBubble : styles.botBubble
-        ]}
-      >
-        <Text style={item.sender === 'user' ? styles.userBubbleText : styles.botBubbleText}>
-          {item.text}
-        </Text>
-      </LinearGradient>
-    </View>
-  );
+type MessageBubbleProps = {
+  item: ChatMessage;
+};
+
+const MessageBubble: React.FC<MessageBubbleProps> = ({ item }) => {
+  const slideAnim = useRef(new Animated.Value(10)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacityAnim, slideAnim]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.bubblePage}>
+    <Animated.View
+      style={{
+        opacity: opacityAnim,
+        transform: [{ translateY: slideAnim }],
+      }}
+    >
+      <View
+        style={[
+          styles.bubbleContainer,
+          item.sender === 'user' ? styles.userBubbleContainer : styles.botBubbleContainer,
+        ]}
+      >
+        {item.sender === 'bot' && (
+          <View style={styles.botAvatar}>
+            <Bot color={Colors.primary.indigo} size={20} />
+          </View>
+        )}
+        <LinearGradient
+          colors={
+            item.sender === 'user'
+              ? [Colors.primary.indigo, Colors.primary.violet]
+              : ['#ffffff', '#f9fafb']
+          }
+          style={[styles.bubble, item.sender === 'user' ? styles.userBubble : styles.botBubble]}
+        >
+          <Text style={item.sender === 'user' ? styles.userBubbleText : styles.botBubbleText}>
+            {item.text}
+          </Text>
+        </LinearGradient>
+      </View>
+    </Animated.View>
+  );
+};
+
+const AssistantScreen = () => {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
+  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES.slice().reverse()); // reverse for inverted FlatList
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingDots, setTypingDots] = useState('.');
+  const flatListRef = useRef<FlatList>(null);
+
+  const getBotReply = (userText: string): string => {
+    const lower = userText.toLowerCase();
+
+    if (lower.includes('otobüs') || lower.includes('ulaşım')) {
+      return 'Ulaşım ekranından sıradaki otobüsleri ve hat bilgilerini görebilirsin. Yakında canlı konum ve durak bazlı arama da eklenecek.';
+    }
+    if (lower.includes('indirim') || lower.includes('genç kart')) {
+      return 'Genç Kart indirimleri için ana sayfadaki “Genç Kart indirimleri” şeridine göz at. Kahve, sinema ve daha birçok mekânda avantajın var.';
+    }
+    if (lower.includes('etkinlik') || lower.includes('festival')) {
+      return 'Etkinlikler ekranında konser, gezi ve spor etkinliklerini tarih ve kategoriye göre inceleyebilirsin.';
+    }
+
+    return 'Şu an seni mock verilerle yönlendiriyorum. Yakında gerçek zamanlı asistanla çok daha detaylı cevaplar verebileceğim.';
+  };
+
+  const sendUserMessage = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isTyping) return;
+
+    const userMessage: ChatMessage = {
+      id: `${Date.now()}-user`,
+      sender: 'user',
+      text: trimmed,
+      timestamp: '',
+    };
+
+    setMessages(prev => [userMessage, ...prev]);
+    setInputText('');
+    setIsTyping(true);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+
+    setTimeout(() => {
+      const botMessage: ChatMessage = {
+        id: `${Date.now()}-bot`,
+        sender: 'bot',
+        text: getBotReply(trimmed),
+        timestamp: '',
+      };
+      setMessages(prev => [botMessage, ...prev]);
+      setIsTyping(false);
+    }, TYPING_DELAY_MS);
+  };
+
+  const renderMessageItem = ({ item }: { item: ChatMessage }) => (
+    <MessageBubble item={item} />
+  );
+
+  // typing dots animation
+  useEffect(() => {
+    if (!isTyping) {
+      setTypingDots('.');
+      return;
+    }
+    const interval = setInterval(() => {
+      setTypingDots(prev => (prev.length >= 3 ? '.' : prev + '.'));
+    }, 350);
+    return () => clearInterval(interval);
+  }, [isTyping]);
+
+  return (
+    <SafeAreaView
+      style={[styles.container, isDark && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
+      <View
+        style={[
+          styles.bubblePage,
+          isDark && { backgroundColor: '#020617', shadowOpacity: 0.25 },
+        ]}
+      >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.keyboardAvoidingView}
@@ -54,14 +193,22 @@ const AssistantScreen = () => {
           
           {/* Quick Start Suggestions */}
           <View>
-            <ScrollView 
-              horizontal 
+            <ScrollView
+              horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.quickStartContainer}
             >
-              {QUICK_START_SUGGESTIONS.map((text, index) => (
-                <TouchableOpacity key={index} style={styles.quickStartChip}>
-                  <Text style={styles.quickStartText}>{text}</Text>
+              {QUICK_ACTIONS.map((action) => (
+                <TouchableOpacity
+                  key={action.id}
+                  style={styles.quickStartChip}
+                  onPress={() => sendUserMessage(action.text)}
+                  activeOpacity={0.9}
+                >
+                  <View style={styles.quickStartChipInner}>
+                    <action.icon size={18} color={Colors.primary.indigo} />
+                    <Text style={styles.quickStartText}>{action.label}</Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -79,14 +226,40 @@ const AssistantScreen = () => {
             style={{ flex: 1 }}
           />
 
+          {/* Typing indicator */}
+          {isTyping && (
+            <View
+              style={[
+                styles.bubbleContainer,
+                styles.botBubbleContainer,
+                { paddingHorizontal: 15 },
+              ]}
+            >
+              <View style={styles.botAvatar}>
+                <Bot color={Colors.primary.indigo} size={20} />
+              </View>
+              <View style={[styles.bubble, styles.botBubble, styles.typingBubble]}>
+                <Text style={styles.typingText}>{typingDots}</Text>
+              </View>
+            </View>
+          )}
+
           {/* Input */}
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Mesajını buraya yaz..."
               style={styles.input}
               placeholderTextColor="#9ca3af"
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={() => sendUserMessage(inputText)}
+              returnKeyType="send"
             />
-            <TouchableOpacity style={styles.sendButton}>
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={() => sendUserMessage(inputText)}
+              activeOpacity={0.9}
+            >
                <LinearGradient colors={[Colors.primary.indigo, Colors.primary.violet]} style={styles.sendButtonGradient}>
                   <SendHorizonal color={Colors.white} size={24} />
                </LinearGradient>
@@ -148,6 +321,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
   },
+  quickStartChipInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   quickStartText: {
     color: Colors.darkGray,
     fontWeight: '500',
@@ -196,6 +374,14 @@ const styles = StyleSheet.create({
   botBubbleText: {
     color: Colors.darkGray,
     fontSize: 16,
+  },
+  typingBubble: {
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  typingText: {
+    fontSize: 18,
+    color: Colors.darkGray,
   },
   inputContainer: {
     flexDirection: 'row',

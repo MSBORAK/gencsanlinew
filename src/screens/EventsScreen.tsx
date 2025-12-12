@@ -6,10 +6,13 @@ import { Heart } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_EVENTS } from '@/api/mockData';
 import { Event } from '@/types';
+import { useThemeMode } from '@/context/ThemeContext';
 
 const CATEGORIES = ['Tümü', 'Konser', 'Gezi', 'Spor'];
 
 const EventsScreen = () => {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const [activeTab, setActiveTab] = useState('Tümü');
 
   const renderEventItem = ({ item }: { item: Event }) => (
@@ -34,7 +37,10 @@ const EventsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, isDark && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Etkinlikler</Text>
       </View>

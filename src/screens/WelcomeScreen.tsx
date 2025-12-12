@@ -4,12 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import BackgroundImage from '@/assets/images/background.jpg';
+import { useThemeMode } from '@/context/ThemeContext';
 import type { StackScreenProps } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/types/navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'Welcome'>;
 
 const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const handleEnterApp = () => {
     navigation.replace('Main', { screen: 'Home' });
   };
@@ -20,7 +23,12 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.bg}
       imageStyle={styles.bgImage}
     >
-      <View style={styles.bgOverlay} />
+      <View
+        style={[
+          styles.bgOverlay,
+          isDark && { backgroundColor: 'rgba(15,23,42,0.85)' },
+        ]}
+      />
 
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.header}>

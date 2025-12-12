@@ -1,8 +1,8 @@
-import { User, Story, Bus, DiscountPartner, ChatMessage, Event, Magazine, Bulletin, Reward, PointsHistory } from '@/types';
+import { User, Story, Bus, DiscountPartner, ChatMessage, Event, Magazine, Bulletin, Reward, PointsHistory, NotificationItem } from '@/types';
 import { Coffee, Utensils, Film } from 'lucide-react-native';
 
 export const MOCK_USER: User = {
-  name: 'Merve',
+  name: 'Mert',
   avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
   isVerified: false,
   dob: '2004',
@@ -42,8 +42,66 @@ export const MOCK_EVENTS: Event[] = [
 ];
 
 export const MOCK_MAGAZINES: Magazine[] = [
-    { id: '1', title: 'Göbeklitepe', image: 'https://images.unsplash.com/photo-1628169493633-14e54b6d39c9?q=80&w=2574&auto=format&fit=crop' },
-    { id: '2', title: 'Balıklıgöl', image: 'https://images.unsplash.com/photo-1593839238634-2b744a8677f5?q=80&w=2574&auto=format&fit=crop' },
+    {
+      id: '1',
+      title: 'Göbeklitepe',
+      image: require('@/assets/images/indir.jpeg'),
+      category: 'historic',
+      description:
+        'Göbeklitepe, insanlık tarihinin bilinen en eski tapınak alanlarından biridir ve Şanlıurfa\'nın kuzeydoğusunda yer alır. ' +
+        'MÖ 10. binyıla tarihlenen T biçimli devasa dikilitaşları, üzerlerindeki hayvan ve sembol kabartmalarıyla neolitik dönemin ' +
+        'inanç dünyasına dair benzersiz ipuçları sunar. Bugün UNESCO Dünya Mirası listesinde yer alan Göbeklitepe, "tarihin sıfır noktası" olarak anılır.'
+    },
+    {
+      id: '2',
+      title: 'Balıklıgöl',
+      image: require('@/assets/images/indir 3.jpeg'),
+      category: 'historic',
+      description:
+        'Balıklıgöl, Şanlıurfa şehir merkezinde yer alan ve Hz. İbrahim\'in ateşe atıldığı yer olarak rivayet edilen kutsal bir mekândır. ' +
+        'Efsaneye göre ateş suya, odunlar ise balığa dönüşür; bu yüzden göldeki sazan balıkları kutsal kabul edilir ve avlanmaz. ' +
+        'Çevresindeki tarihi camiler, medreseler ve çarşılarla birlikte Balıklıgöl, hem manevi atmosferi hem de mimarisiyle kentin simgelerindendir.'
+    },
+    {
+      id: '3',
+      title: 'Şanlıurfa Kalesi',
+      image: 'https://images.unsplash.com/photo-1526481280695-3c687fd543c0?q=80&w=2400&auto=format&fit=crop',
+      category: 'historic',
+      description:
+        'Şehrin merkezindeki tepe üzerinde yer alan Şanlıurfa Kalesi, bölgenin savunma tarihine ışık tutan önemli bir yapıdır.',
+    },
+    {
+      id: '4',
+      title: 'Arkeoloji Müzesi',
+      image: 'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=2400&auto=format&fit=crop',
+      category: 'museum',
+      description:
+        'Şanlıurfa Arkeoloji Müzesi, Göbeklitepe başta olmak üzere bölgenin binlerce yıllık arkeolojik mirasını sergiler.',
+    },
+    {
+      id: '5',
+      title: 'Mozaik Müzesi',
+      image: 'https://images.unsplash.com/photo-1533659828870-3cf1f7c9fc02?q=80&w=2400&auto=format&fit=crop',
+      category: 'museum',
+      description:
+        'Haleplibahçe Mozaik Müzesi, Roma dönemine ait benzersiz mozaikleri ile sanat ve tarih tutkunlarının uğrak noktasıdır.',
+    },
+    {
+      id: '6',
+      title: 'Karaali Parkı',
+      image: 'https://images.unsplash.com/photo-1527708678327-8c04c1f9c3a9?q=80&w=2400&auto=format&fit=crop',
+      category: 'nature',
+      description:
+        'Karaali Parkı, yeşil alanları ve yürüyüş yolları ile şehir merkezine çok yakın bir nefes alma noktasıdır.',
+    },
+    {
+      id: '7',
+      title: 'Fırat Nehri Kıyısı',
+      image: 'https://images.unsplash.com/photo-1502904550040-7534597429ae?q=80&w=2400&auto=format&fit=crop',
+      category: 'nature',
+      description:
+        'Fırat Nehri kıyısında gün batımını izlemek, Şanlıurfa’da doğayla baş başa kalmanın en keyifli yollarından biridir.',
+    },
 ];
 
 export const MOCK_BULLETINS: Bulletin[] = [
@@ -61,4 +119,31 @@ export const MOCK_POINTS_HISTORY: PointsHistory[] = [
     { id: '1', description: 'Otobüs Kullanımı', points: 50, date: '10 Aralık' },
     { id: '2', description: 'Bedava Kahve', points: -500, date: '9 Aralık' },
     { id: '3', description: 'Anket Doldurma', points: 100, date: '8 Aralık' },
+];
+
+export const MOCK_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: '1',
+    title: 'Yeni İndirim: Mırra Kahve Evi',
+    message: 'Tüm kahve çeşitlerinde bugün %20 indirim seni bekliyor.',
+    type: 'discount',
+    createdAt: 'Bugün, 10:15',
+    isRead: false,
+  },
+  {
+    id: '2',
+    title: 'Bu Akşam Sıra Gecesi',
+    message: 'Balıklıgöl’deki sıra gecesi etkinliği saat 20:00’de başlıyor. Katılmayı unutma!',
+    type: 'event',
+    createdAt: 'Dün, 18:00',
+    isRead: false,
+  },
+  {
+    id: '3',
+    title: 'Genç Bileti Fırsatı',
+    message: 'Piazza AVM sinemasında hafta içi seanslarında genç bileti kampanyası devam ediyor.',
+    type: 'discount',
+    createdAt: '2 gün önce',
+    isRead: true,
+  },
 ];

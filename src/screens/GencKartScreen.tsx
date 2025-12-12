@@ -10,12 +10,15 @@ import { UrfaIcon_Balik, UrfaIcon_Gobeklitepe, UrfaIcon_Harran } from '@/compone
 import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '@/types/navigation';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { useThemeMode } from '@/context/ThemeContext';
 
 
 type Nav = StackNavigationProp<RootStackParamList>;
 
 const GencKartScreen = () => {
   const navigation = useNavigation<Nav>();
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
 
   const renderPartnerItem = (item: DiscountPartner) => {
     const Icon = item.icon; 
@@ -35,7 +38,10 @@ const GencKartScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, isDark && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
         <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>ŞanlıGenç Kart</Text>

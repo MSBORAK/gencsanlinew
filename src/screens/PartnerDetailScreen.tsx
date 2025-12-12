@@ -5,16 +5,22 @@ import { Colors } from '@/constants/Colors';
 import { MOCK_PARTNERS } from '@/api/mockData';
 import type { StackScreenProps } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/types/navigation';
+import { useThemeMode } from '@/context/ThemeContext';
 
 type Props = StackScreenProps<RootStackParamList, 'PartnerDetail'>;
 
 const PartnerDetailScreen: React.FC<Props> = ({ route }) => {
+  const { mode } = useThemeMode();
+  const isDamage = mode === 'dark';
   const { partnerId } = route.params;
   const partner = MOCK_PARTNERS.find(p => p.id === partnerId);
 
   if (!partner) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView
+        style={[styles.container, isDamage && { backgroundColor: '#020617' }]}
+        edges={['top']}
+      >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Mekan Bulunamadı</Text>
         </View>
@@ -25,7 +31,10 @@ const PartnerDetailScreen: React.FC<Props> = ({ route }) => {
   const Icon = partner.icon;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, isDamage && { backgroundColor: '#020617' }]}
+      edges={['top']}
+    >
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{partner.name}</Text>

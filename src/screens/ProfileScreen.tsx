@@ -1,19 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, TextInput, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, ScrollView, Platform, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronRight, Bell, ShieldCheck, LogOut, User as UserIcon, X } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_USER } from '@/api/mockData';
+import { useThemeMode } from '@/context/ThemeContext';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/types/navigation';
 
 type Nav = StackNavigationProp<RootStackParamList>;
 
 const ProfileScreen = () => {
+  const { mode, toggleTheme } = useThemeMode();
   const [modalVisible, setModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+  const [eventNotificationsEnabled, setEventNotificationsEnabled] = useState(true);
+  const [discountNotificationsEnabled, setDiscountNotificationsEnabled] = useState(true);
+  const [locationNotificationsEnabled, setLocationNotificationsEnabled] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+  const [personalizationEnabled, setPersonalizationEnabled] = useState(true);
   const navigation = useNavigation<Nav>();
+
+  const userInitial = (MOCK_USER.name?.charAt(0) ?? '').toUpperCase();
 
   const handleLogout = () => {
     navigation.reset({
@@ -32,26 +43,55 @@ const ProfileScreen = () => {
     </TouchableOpacity>
   );
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil</Text>
-        </View>
+  const isDark = mode === 'dark';
 
-        {/* User Info Card (Glassmorphism) */}
-        <View style={styles.userInfoWrapper}>
-          <BlurView intensity={30} tint="light" style={styles.userInfoCard}>
-            <View style={styles.avatarContainer}>
-              <Image source={{ uri: MOCK_USER.avatar }} style={styles.avatar} />
+  return (
+    <View style={[styles.root, isDark && { backgroundColor: Colors.black }]}>
+      {/* Üstteki status bar alanı mor */}
+      <SafeAreaView
+        style={[styles.statusBarArea, isDark && { backgroundColor: Colors.black }]}
+        edges={['top']}
+      />
+      {/* Alt içerik alanı */}
+      <SafeAreaView
+        style={[styles.container, isDark && { backgroundColor: '#020617' }]}
+        edges={['left', 'right', 'bottom']}
+      >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+        {/* Colorful Header + User Card */}
+        <View style={styles.headerSection}>
+          <LinearGradient
+            colors={
+              isDark
+                ? ['#020617', '#1f2937']
+                : [Colors.primary.violet, Colors.primary.indigo]
+            }
+            style={styles.headerGradient}
+          >
+            <Text style={styles.headerTitle}>Profil</Text>
+
+            {/* User Info Card (Glassmorphism) */}
+            <View style={styles.userInfoWrapper}>
+              <BlurView intensity={30} tint="light" style={styles.userInfoCard}>
+                <View style={styles.avatarContainer}>
+                  <Text style={styles.avatarInitial}>{userInitial}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.userName,
+                      isDark && { color: Colors.white },
+                    ]}
+                  >
+                    {MOCK_USER.name}
+                  </Text>
+                  <View style={styles.userMetaRow}>
+                    <Text style={styles.userStatus}>{MOCK_USER.status}</Text>
+                  </View>
+                </View>
+              </BlurView>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.userName}>{MOCK_USER.name}</Text>
-              <View style={styles.userMetaRow}>
-                <Text style={styles.userStatus}>{MOCK_USER.status}</Text>
-              </View>
-            </View>
-          </BlurView>
+          </LinearGradient>
         </View>
 
         {/* Verification Alert */}
@@ -70,11 +110,130 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         )}
         
+        {/* Account Info */}
+        <Text style={styles.sectionTitle}>Hesap Bilgileri</Text>
+        <View style={styles.menuContainer}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Ad Soyad</Text>
+            <Text style={styles.infoValue}>{MOCK_USER.name}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Doğum Yılı</Text>
+            <Text style={styles.infoValue}>{MOCK_USER.dob}</Text>
+          </View>
+          <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.infoLabel}>Durum</Text>
+            <Text style={styles.infoValue}>{MOCK_USER.status}</Text>
+          </View>
+        </View>
+
         {/* Settings Group */}
         <Text style={styles.sectionTitle}>Ayarlar</Text>
         <View style={styles.menuContainer}>
           <MenuItem label="Kişisel Bilgiler" icon={<UserIcon color="#6b7280" size={24} />} />
-          <MenuItem label="Bildirimler" icon={<Bell color="#6b7280" size={24} />} isLast />
+          <MenuItem
+            label="Bildirimler"
+            icon={<Bell color="#6b7280" size={24} />}
+            onPress={() => navigation.navigate('Notifications')}
+            isLast
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>Bildirim Tercihleri</Text>
+        <View style={styles.menuContainer}>
+          <View style={styles.switchRow}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>Etkinlik bildirimleri</Text>
+              <Text style={styles.switchSubtitle}>Yeni etkinlikler ve hatırlatmalar</Text>
+            </View>
+            <Switch
+              value={eventNotificationsEnabled}
+              onValueChange={setEventNotificationsEnabled}
+              thumbColor={eventNotificationsEnabled ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
+          <View style={styles.switchRow}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>İndirim bildirimleri</Text>
+              <Text style={styles.switchSubtitle}>Anlaşmalı mekân ve kampanyalar</Text>
+            </View>
+            <Switch
+              value={discountNotificationsEnabled}
+              onValueChange={setDiscountNotificationsEnabled}
+              thumbColor={discountNotificationsEnabled ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
+          <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>Konum bazlı bildirimler</Text>
+              <Text style={styles.switchSubtitle}>Yakınındaki indirimleri haber ver</Text>
+            </View>
+            <Switch
+              value={locationNotificationsEnabled}
+              onValueChange={setLocationNotificationsEnabled}
+              thumbColor={locationNotificationsEnabled ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
+        </View>
+
+        <Text style={styles.sectionTitle}>Veri Gizliliği</Text>
+        <View style={styles.menuContainer}>
+          <View style={styles.switchRow}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>Analiz verilerini paylaş</Text>
+              <Text style={styles.switchSubtitle}>Uygulamanın geliştirilmesine anonim katkı sağlar</Text>
+            </View>
+            <Switch
+              value={analyticsEnabled}
+              onValueChange={setAnalyticsEnabled}
+              thumbColor={analyticsEnabled ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
+          <View style={styles.switchRow}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>Kişiselleştirilmiş içerik</Text>
+              <Text style={styles.switchSubtitle}>İlgi alanlarına göre öneriler göster</Text>
+            </View>
+            <Switch
+              value={personalizationEnabled}
+              onValueChange={setPersonalizationEnabled}
+              thumbColor={personalizationEnabled ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={() => setPrivacyModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.menuItemLeft}>
+              <ShieldCheck color="#6b7280" size={24} />
+              <Text style={styles.menuItemText}>Gizlilik Politikası</Text>
+            </View>
+            <ChevronRight color="#9ca3af" size={24} />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.sectionTitle}>Görünüm</Text>
+        <View style={styles.menuContainer}>
+          <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.switchTextWrapper}>
+              <Text style={styles.switchTitle}>Karanlık Mod</Text>
+              <Text style={styles.switchSubtitle}>
+                Uygulamayı koyu tema ile kullan
+              </Text>
+            </View>
+            <Switch
+              value={isDark}
+              onValueChange={toggleTheme}
+              thumbColor={isDark ? Colors.primary.indigo : '#e5e7eb'}
+              trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
+            />
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>Diğer</Text>
@@ -115,29 +274,67 @@ const ProfileScreen = () => {
             </View>
           </View>
         </Modal>
-      </ScrollView>
-    </SafeAreaView>
+
+        {/* Privacy Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={privacyModalVisible}
+          onRequestClose={() => setPrivacyModalVisible(!privacyModalVisible)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalView}>
+              <TouchableOpacity style={styles.closeButton} onPress={() => setPrivacyModalVisible(false)}>
+                <X color="#9ca3af" size={24} />
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Veri Gizliliği</Text>
+              <Text style={styles.modalSubtitle}>
+                Uygulama; konum, kullanım ve tercih bilgilerini yalnızca hizmetleri
+                iyileştirmek ve sana daha uygun içerikler göstermek için işler.
+                Ayarlardan analiz ve kişiselleştirme tercihlerini dilediğin zaman
+                değiştirebilirsin.
+              </Text>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setPrivacyModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Anladım</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: Colors.primary.violet,
+  },
+  statusBarArea: {
+    backgroundColor: Colors.primary.violet,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: Colors.lightGray,
   },
-  header: {
+  headerSection: {
+    marginBottom: 24,
+  },
+  headerGradient: {
+    paddingTop: 16,
+    paddingBottom: 32,
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.darkGray,
+    color: Colors.white,
   },
   userInfoWrapper: {
-    marginHorizontal: 20,
-    marginTop: 10,
+    marginTop: 18,
     borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
@@ -154,17 +351,15 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: Colors.accent.amber,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
   },
-  avatar: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+  avatarInitial: {
+    color: Colors.white,
+    fontSize: 28,
+    fontWeight: 'bold',
   },
   userName: {
     fontSize: 22,
@@ -281,6 +476,47 @@ const styles = StyleSheet.create({
       marginLeft: 15,
       color: Colors.darkGray,
       fontWeight: '600'
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: '#6b7280',
+  },
+  infoValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.darkGray,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  switchTextWrapper: {
+    flex: 1,
+    marginRight: 12,
+  },
+  switchTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.darkGray,
+  },
+  switchSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#6b7280',
   },
   modalBackdrop: {
     flex: 1,
