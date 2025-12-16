@@ -42,7 +42,7 @@ const EventsScreen = () => {
       edges={['top']}
     >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Etkinlikler</Text>
+        <Text style={[styles.headerTitle, isDark && { color: '#f8fafc' }]}>Etkinlikler</Text>
       </View>
       
       <View>
@@ -51,10 +51,18 @@ const EventsScreen = () => {
             data={CATEGORIES}
             renderItem={({ item }) => (
             <TouchableOpacity 
-                style={[styles.tab, activeTab === item && styles.activeTab]}
+                style={[
+                    styles.tab, 
+                    isDark && { backgroundColor: '#1e293b', borderColor: '#334155' },
+                    activeTab === item && (isDark ? { backgroundColor: Colors.primary.indigo, borderColor: Colors.primary.indigo } : styles.activeTab)
+                ]}
                 onPress={() => setActiveTab(item)}
             >
-                <Text style={[styles.tabText, activeTab === item && styles.activeTabText]}>{item}</Text>
+                <Text style={[
+                    styles.tabText, 
+                    isDark && { color: '#94a3b8' },
+                    activeTab === item && (isDark ? { color: Colors.white } : styles.activeTabText)
+                ]}>{item}</Text>
             </TouchableOpacity>
             )}
             keyExtractor={(item) => item}

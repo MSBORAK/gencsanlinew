@@ -33,7 +33,7 @@ const MagazineScreen = () => {
     >
       <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Keşfet</Text>
+          <Text style={[styles.headerTitle, isDark && { color: '#f8fafc' }]}>Keşfet</Text>
         </View>
 
         {/* Tarihi Mirasımız / Şanlıurfa Keşfet */}
@@ -44,13 +44,18 @@ const MagazineScreen = () => {
           contentContainerStyle={styles.categoryRow}
         >
           <TouchableOpacity
-            style={[styles.categoryChip, selectedCategory === 'all' && styles.categoryChipActive]}
+            style={[
+                styles.categoryChip, 
+                isDark && { backgroundColor: '#334155', borderColor: '#475569' },
+                selectedCategory === 'all' && styles.categoryChipActive
+            ]}
             onPress={() => setSelectedCategory('all')}
             activeOpacity={0.9}
           >
             <Text
               style={[
                 styles.categoryChipText,
+                isDark && { color: '#e2e8f0' },
                 selectedCategory === 'all' && styles.categoryChipTextActive,
               ]}
             >
@@ -58,13 +63,18 @@ const MagazineScreen = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.categoryChip, selectedCategory === 'historic' && styles.categoryChipActive]}
+            style={[
+                styles.categoryChip, 
+                isDark && { backgroundColor: '#334155', borderColor: '#475569' },
+                selectedCategory === 'historic' && styles.categoryChipActive
+            ]}
             onPress={() => setSelectedCategory('historic')}
             activeOpacity={0.9}
           >
             <Text
               style={[
                 styles.categoryChipText,
+                isDark && { color: '#e2e8f0' },
                 selectedCategory === 'historic' && styles.categoryChipTextActive,
               ]}
             >
@@ -72,13 +82,18 @@ const MagazineScreen = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.categoryChip, selectedCategory === 'museum' && styles.categoryChipActive]}
+            style={[
+                styles.categoryChip, 
+                isDark && { backgroundColor: '#334155', borderColor: '#475569' },
+                selectedCategory === 'museum' && styles.categoryChipActive
+            ]}
             onPress={() => setSelectedCategory('museum')}
             activeOpacity={0.9}
           >
             <Text
               style={[
                 styles.categoryChipText,
+                isDark && { color: '#e2e8f0' },
                 selectedCategory === 'museum' && styles.categoryChipTextActive,
               ]}
             >
@@ -86,13 +101,18 @@ const MagazineScreen = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.categoryChip, selectedCategory === 'nature' && styles.categoryChipActive]}
+            style={[
+                styles.categoryChip, 
+                isDark && { backgroundColor: '#334155', borderColor: '#475569' },
+                selectedCategory === 'nature' && styles.categoryChipActive
+            ]}
             onPress={() => setSelectedCategory('nature')}
             activeOpacity={0.9}
           >
             <Text
               style={[
                 styles.categoryChipText,
+                isDark && { color: '#e2e8f0' },
                 selectedCategory === 'nature' && styles.categoryChipTextActive,
               ]}
             >
@@ -111,7 +131,7 @@ const MagazineScreen = () => {
 
             return (
               <TouchableOpacity
-                style={styles.heritageCard}
+                style={[styles.heritageCard, isDark && { backgroundColor: '#1e293b' }]}
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('HeritageDetail', { id: item.id })}
               >
@@ -129,24 +149,24 @@ const MagazineScreen = () => {
         />
 
         {/* E-Dergi */}
-        <Text style={styles.sectionTitle}>E-Dergi</Text>
-        <TouchableOpacity style={styles.eDergiCard}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>E-Dergi</Text>
+        <TouchableOpacity style={[styles.eDergiCard, isDark && { borderColor: '#334155' }]}>
           <Image 
             source={DergiCover}
-            style={styles.eDergiImage} 
+            style={[styles.eDergiImage, isDark && { borderColor: '#334155' }]} 
           />
         </TouchableOpacity>
 
         {/* Bulletins */}
         <Text style={styles.sectionTitle}>Bültenler</Text>
-        <View style={styles.menuContainer}>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}>
             {MOCK_BULLETINS.map((item, index) => (
-                <TouchableOpacity key={item.id} style={[styles.bulletinRow, index === MOCK_BULLETINS.length - 1 && { borderBottomWidth: 0 }]}>
+                <TouchableOpacity key={item.id} style={[styles.bulletinRow, index === MOCK_BULLETINS.length - 1 && { borderBottomWidth: 0 }, isDark && { borderBottomColor: '#334155' }]}>
                     <View style={styles.bulletinLeft}>
-                        <Download color="#6b7280" size={24} />
-                        <Text style={styles.bulletinTitle}>{item.title}</Text>
+                        <Download color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                        <Text style={[styles.bulletinTitle, isDark && { color: '#f8fafc' }]}>{item.title}</Text>
                     </View>
-                    <ChevronRight color="#9ca3af" size={24} />
+                    <ChevronRight color={isDark ? '#64748b' : '#9ca3af'} size={24} />
                 </TouchableOpacity>
             ))}
         </View>

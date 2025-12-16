@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { 
   Calendar, BookOpen, User, Megaphone, Palette, Bus, Users, 
-  Flame, QrCode, 
+  Flame, QrCode, X, ChevronLeft, ChevronRight,
   CloudRain, Sun, Cloud, CloudSnow, CloudLightning, CloudDrizzle 
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -63,6 +63,41 @@ const HomeScreen = () => {
   const [activeStoryIndex, setActiveStoryIndex] = useState<number | null>(null);
   const [storyProgress, setStoryProgress] = useState(0); 
   const rainAnim = useRef(new Animated.Value(0)).current;
+  
+  // Takvim Modal State
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const [calendarView, setCalendarView] = useState<'month' | 'year'>('month');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  const DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+  
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    let startDay = firstDay.getDay() - 1;
+    if (startDay < 0) startDay = 6;
+    
+    const days: (number | null)[] = [];
+    for (let i = 0; i < startDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(i);
+    return days;
+  };
+  
+  const changeMonth = (delta: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setMonth(newDate.getMonth() + delta);
+    setSelectedDate(newDate);
+  };
+  
+  const changeYear = (delta: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setFullYear(newDate.getFullYear() + delta);
+    setSelectedDate(newDate);
+  };
 
   // --- HAVA DURUMU KISMI ---
   const [weatherData, setWeatherData] = useState<any>(null);
@@ -89,16 +124,16 @@ const HomeScreen = () => {
     }
   };
 
-  const getWeatherIcon = () => {
-    if (!weatherData) return <Cloud color={Colors.white} size={26} />;
+  const getWeatherIcon = (size = 26, color = Colors.white) => {
+    if (!weatherData) return <Cloud color={color} size={size} />;
     const conditionId = weatherData.weather[0].id;
-    if (conditionId === 800) return <Sun color={Colors.white} size={26} />;
-    if (conditionId >= 200 && conditionId < 300) return <CloudLightning color={Colors.white} size={26} />;
-    if (conditionId >= 300 && conditionId < 500) return <CloudDrizzle color={Colors.white} size={26} />;
-    if (conditionId >= 500 && conditionId < 600) return <CloudRain color={Colors.white} size={26} />;
-    if (conditionId >= 600 && conditionId < 700) return <CloudSnow color={Colors.white} size={26} />;
-    if (conditionId >= 700 && conditionId < 800) return <Cloud color={Colors.white} size={26} />;
-    return <Cloud color={Colors.white} size={26} />;
+    if (conditionId === 800) return <Sun color={color} size={size} />;
+    if (conditionId >= 200 && conditionId < 300) return <CloudLightning color={color} size={size} />;
+    if (conditionId >= 300 && conditionId < 500) return <CloudDrizzle color={color} size={size} />;
+    if (conditionId >= 500 && conditionId < 600) return <CloudRain color={color} size={size} />;
+    if (conditionId >= 600 && conditionId < 700) return <CloudSnow color={color} size={size} />;
+    if (conditionId >= 700 && conditionId < 800) return <Cloud color={color} size={size} />;
+    return <Cloud color={color} size={size} />;
   };
 
   const handleWeatherDetail = () => {
@@ -238,93 +273,86 @@ const HomeScreen = () => {
 
         {/* Dashboard */}
         <View style={styles.dashboardInner}>
-          <View style={styles.statsCard}>
+          <LinearGradient
+            colors={isDark ? ['#1e293b', '#334155'] : [Colors.primary.indigo, Colors.primary.violet]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.statsCard}
+          >
+              {/* Hava Durumu */}
               <TouchableOpacity
-                style={styles.statsLeft}
+                style={styles.statsSection}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Main', { screen: 'GencKart' as keyof MainTabParamList })}
+                onPress={handleWeatherDetail}
               >
-                  <Text style={styles.statsTitle}>GENÇ KART</Text>
-                  <Text style={styles.statsValue}>Göster & Geç</Text>
+                  <Text style={styles.statsTitleWhite}>HAVA DURUMU</Text>
+                  <View style={styles.weatherStatsRow}>
+                    {getWeatherIcon(22, '#fbbf24')}
+                    <Text style={[styles.statsValueWhite, { marginLeft: 6 }]}>
+                      {weatherData ? `${Math.round(weatherData.main.temp)}°` : '--'}
+                    </Text>
+                  </View>
               </TouchableOpacity>
-              <View style={styles.statsDivider} />
+              
+              <View style={styles.statsDividerWhite} />
+              
+              {/* Takvim */}
               <TouchableOpacity
-                style={styles.statsRight}
+                style={styles.statsSection}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Main', { screen: 'Transport' as keyof MainTabParamList })}
+                onPress={() => setCalendarVisible(true)}
               >
-                  <Text style={styles.statsTitle}>SIRADAKİ OTOBÜS</Text>
-                  <Text style={styles.statsValue}>{nextBus.lineNumber} • {nextBus.arrivalTime} dk</Text>
+                  <Text style={styles.statsTitleWhite}>TAKVİM</Text>
+                  <View style={styles.calendarStatsRow}>
+                    <Calendar color="#818cf8" size={22} />
+                    <Text style={[styles.statsValueWhite, { marginLeft: 6 }]}>
+                      {new Date().getDate()} {['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'][new Date().getMonth()]}
+                    </Text>
+                  </View>
               </TouchableOpacity>
-          </View>
+          </LinearGradient>
 
           <View style={styles.content}>
-            <Text style={styles.sectionTitle}>HIZLI ERİŞİM</Text>
+            <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>HIZLI ERİŞİM</Text>
             <View style={styles.quickAccessContainer}>
                 {QUICK_ACCESS_NAV.map(item => (
                     <TouchableOpacity key={item.name} style={styles.quickAccessItem} onPress={() => handleNavigation(item)}>
                         <View style={styles.quickAccessIcon}>
                             <BlurView intensity={90} tint="light" style={styles.blurView}>
-                                <View style={[styles.colorOverlay, { backgroundColor: item.color, opacity: 0.6 }]} />
-                                <item.icon color={item.iconColor} size={24} />
+                                <View style={[styles.colorOverlay, { backgroundColor: item.color, opacity: 0.6 }, isDark && { backgroundColor: '#334155', opacity: 0.8 }]} />
+                                <item.icon color={isDark ? '#e2e8f0' : item.iconColor} size={24} />
                             </BlurView>
                         </View>
-                        <Text style={styles.quickAccessText}>{item.name}</Text>
+                        <Text style={[styles.quickAccessText, isDark && { color: '#f8fafc' }]}>{item.name}</Text>
                     </TouchableOpacity>
                 ))}
             </View>
 
             <View style={styles.widgetsContainer}>
-                {/* Weather Widget - TASARIM DÜZELTİLDİ */}
-                <TouchableOpacity
-                    activeOpacity={0.9}
-                    onPress={handleWeatherDetail}
-                    // padding: 0 ve overflow: hidden çok önemli, dışarı taşmayı engeller
-                    style={[styles.widgetCard, { padding: 0, paddingHorizontal: 0, paddingVertical: 0, overflow: 'hidden' }]}
-                >
-                    <LinearGradient
-                        colors={['#fbbf24', '#f59e0b']}
-                        // İçerideki elemanlar için padding burada veriliyor
-                        style={[styles.weatherCard, { flex: 1, paddingHorizontal: 10, paddingVertical: 8 }]}
-                    >
-                        <View>
-                            <Text style={styles.widgetLabel}>HAVA</Text>
-                            <Text style={styles.weatherTemp}>
-                                {weatherData ? `${Math.round(weatherData.main.temp)}°` : '--'}
-                            </Text>
-                        </View>
-                        <View style={styles.weatherIconWrapper}>
-                            <Animated.View style={{ transform: [{ translateY: rainTranslate }] }}>
-                                {getWeatherIcon()}
-                            </Animated.View>
-                        </View>
-                    </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Quote of the day Widget */}
-                <TouchableOpacity style={[styles.widgetCard, styles.quoteCard]}>
+                {/* Quote of the day Widget - Full Width */}
+                <TouchableOpacity style={[styles.widgetCard, styles.quoteCard, { width: '100%' }, isDark && { backgroundColor: '#312e81' }]}>
                     <View style={styles.quoteHeaderRow}>
-                      <Text style={[styles.widgetLabel, styles.widgetLabelQuote]}>GÜNÜN SÖZÜ</Text>
-                      <Flame color={Colors.accent.rose} size={20} />
+                      <Text style={[styles.widgetLabel, styles.widgetLabelQuote, isDark && { color: '#a5b4fc' }]}>GÜNÜN SÖZÜ</Text>
+                      <Flame color={isDark ? '#fb7185' : Colors.accent.rose} size={20} />
                     </View>
-                    <Text style={styles.quoteText} numberOfLines={2}>"{quoteOfDay}"</Text>
+                    <Text style={[styles.quoteText, isDark && { color: '#e0e7ff' }]} numberOfLines={2}>"{quoteOfDay}"</Text>
                 </TouchableOpacity>
             </View>
 
-            <Text style={[styles.sectionTitle, { marginTop: 28 }]}>Genç Kart indirimleri</Text>
+            <Text style={[styles.sectionTitle, { marginTop: 28 }, isDark && { color: '#94a3b8' }]}>Genç Kart indirimleri</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.partnersScrollContent}>
               {MOCK_PARTNERS.map(partner => {
                 const Icon = partner.icon;
                 return (
                   <TouchableOpacity
                     key={partner.id}
-                    style={[styles.partnerCard, { backgroundColor: partner.bgColor }]}
+                    style={[styles.partnerCard, { backgroundColor: partner.bgColor }, isDark && { backgroundColor: '#1e293b', borderWidth: 1, borderColor: '#334155' }]}
                     activeOpacity={0.9}
                     onPress={() => navigation.navigate('PartnerDetail', { partnerId: partner.id })}
                   >
-                    <View style={styles.partnerIconWrapper}><Icon color={partner.iconColor} size={22} /></View>
-                    <Text style={styles.partnerName} numberOfLines={1}>{partner.name}</Text>
-                    <Text style={styles.partnerOffer}>{partner.offer}</Text>
+                    <View style={[styles.partnerIconWrapper, isDark && { backgroundColor: '#334155' }]}><Icon color={isDark ? '#e2e8f0' : partner.iconColor} size={22} /></View>
+                    <Text style={[styles.partnerName, isDark && { color: '#f8fafc' }]} numberOfLines={1}>{partner.name}</Text>
+                    <Text style={[styles.partnerOffer, isDark && { color: '#cbd5e1' }]}>{partner.offer}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -359,6 +387,139 @@ const HomeScreen = () => {
             )}
           </View>
         </Modal>
+
+        {/* Calendar Modal */}
+        <Modal visible={calendarVisible} animationType="slide" transparent onRequestClose={() => setCalendarVisible(false)}>
+          <View style={styles.calendarModalBackdrop}>
+            <View style={[styles.calendarModalCard, isDark && { backgroundColor: '#1e293b' }]}>
+              {/* Header */}
+              <View style={styles.calendarHeader}>
+                <Text style={[styles.calendarTitle, isDark && { color: '#f8fafc' }]}>
+                  {calendarView === 'month' ? 'Aylık Takvim' : 'Yıllık Takvim'}
+                </Text>
+                <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.calendarCloseBtn}>
+                  <X color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                </TouchableOpacity>
+              </View>
+
+              {/* View Toggle */}
+              <View style={[styles.calendarToggle, isDark && { backgroundColor: '#0f172a' }]}>
+                <TouchableOpacity
+                  style={[styles.calendarToggleBtn, calendarView === 'month' && styles.calendarToggleBtnActive]}
+                  onPress={() => setCalendarView('month')}
+                >
+                  <Text style={[styles.calendarToggleText, calendarView === 'month' && styles.calendarToggleTextActive, isDark && calendarView !== 'month' && { color: '#94a3b8' }]}>Aylık</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.calendarToggleBtn, calendarView === 'year' && styles.calendarToggleBtnActive]}
+                  onPress={() => setCalendarView('year')}
+                >
+                  <Text style={[styles.calendarToggleText, calendarView === 'year' && styles.calendarToggleTextActive, isDark && calendarView !== 'year' && { color: '#94a3b8' }]}>Yıllık</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Month View */}
+              {calendarView === 'month' && (
+                <View style={styles.calendarContent}>
+                  <View style={styles.calendarNavRow}>
+                    <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.calendarNavBtn}>
+                      <ChevronLeft color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                    </TouchableOpacity>
+                    <Text style={[styles.calendarMonthText, isDark && { color: '#f8fafc' }]}>
+                      {MONTHS[selectedDate.getMonth()]} {selectedDate.getFullYear()}
+                    </Text>
+                    <TouchableOpacity onPress={() => changeMonth(1)} style={styles.calendarNavBtn}>
+                      <ChevronRight color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.calendarDaysHeader}>
+                    {DAYS.map((day) => (
+                      <Text key={day} style={[styles.calendarDayName, isDark && { color: '#94a3b8' }]}>{day}</Text>
+                    ))}
+                  </View>
+
+                  <View style={styles.calendarGrid}>
+                    {getDaysInMonth(selectedDate).map((day, index) => {
+                      const isToday = day === new Date().getDate() && 
+                        selectedDate.getMonth() === new Date().getMonth() && 
+                        selectedDate.getFullYear() === new Date().getFullYear();
+                      return (
+                        <View key={index} style={styles.calendarDayCell}>
+                          {day && (
+                            <View style={[styles.calendarDay, isToday && styles.calendarDayToday]}>
+                              <Text style={[styles.calendarDayText, isToday && styles.calendarDayTextToday, isDark && !isToday && { color: '#f8fafc' }]}>
+                                {day}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+
+              {/* Year View */}
+              {calendarView === 'year' && (
+                <View style={styles.calendarContent}>
+                  <View style={styles.calendarNavRow}>
+                    <TouchableOpacity onPress={() => changeYear(-1)} style={styles.calendarNavBtn}>
+                      <ChevronLeft color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                    </TouchableOpacity>
+                    <Text style={[styles.calendarYearText, isDark && { color: '#f8fafc' }]}>
+                      {selectedDate.getFullYear()}
+                    </Text>
+                    <TouchableOpacity onPress={() => changeYear(1)} style={styles.calendarNavBtn}>
+                      <ChevronRight color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.calendarMonthsGrid}>
+                    {MONTHS.map((month, index) => {
+                      const isCurrentMonth = index === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear();
+                      return (
+                        <TouchableOpacity
+                          key={month}
+                          style={[
+                            styles.calendarMonthCell, 
+                            isCurrentMonth && styles.calendarMonthCellActive,
+                            isDark && !isCurrentMonth && { backgroundColor: '#334155' }
+                          ]}
+                          onPress={() => {
+                            const newDate = new Date(selectedDate);
+                            newDate.setMonth(index);
+                            setSelectedDate(newDate);
+                            setCalendarView('month');
+                          }}
+                        >
+                          <Text style={[
+                            styles.calendarMonthName, 
+                            isCurrentMonth && styles.calendarMonthNameActive, 
+                            isDark && !isCurrentMonth && { color: '#f8fafc' }
+                          ]}>
+                            {month.slice(0, 3)}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+
+              {/* Go to Events Button */}
+              <TouchableOpacity
+                style={styles.calendarEventsBtn}
+                onPress={() => {
+                  setCalendarVisible(false);
+                  navigation.navigate('Events');
+                }}
+              >
+                <Text style={styles.calendarEventsBtnText}>Etkinliklere Git</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -383,12 +544,18 @@ const styles = StyleSheet.create({
     storyBorder: { width: 60, height: 60, borderRadius: 30, justifyContent: 'center', alignItems: 'center' },
     headerNavImage: { width: 54, height: 54, borderRadius: 27, borderWidth: 2, borderColor: '#43389F' },
     headerNavText: { color: Colors.white, marginTop: 8, fontWeight: '600' },
-    statsCard: { flexDirection: 'row', backgroundColor: Colors.white, borderRadius: 20, marginHorizontal: 20, marginTop: -50, height: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 15, alignItems: 'center' },
+    statsCard: { flexDirection: 'row', borderRadius: 20, marginHorizontal: 20, marginTop: -50, height: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 15, alignItems: 'center', overflow: 'hidden' },
+    statsSection: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     statsLeft: { flex: 1, alignItems: 'center' },
     statsRight: { flex: 1, alignItems: 'center' },
     statsDivider: { width: 1, backgroundColor: '#e5e7eb', height: '60%' },
-    statsTitle: { color: '#9ca3af', fontWeight: '600', fontSize: 12 },
-    statsValue: { fontSize: 16, fontWeight: 'bold', color: Colors.darkGray },
+    statsDividerWhite: { width: 1, backgroundColor: 'rgba(255,255,255,0.3)', height: '60%' },
+    statsTitle: { color: '#9ca3af', fontWeight: '600', fontSize: 10, marginBottom: 4 },
+    statsTitleWhite: { color: 'rgba(255,255,255,0.9)', fontWeight: '700', fontSize: 12, marginBottom: 4 },
+    statsValue: { fontSize: 14, fontWeight: 'bold', color: Colors.darkGray },
+    statsValueWhite: { fontSize: 18, fontWeight: 'bold', color: Colors.white },
+    weatherStatsRow: { flexDirection: 'row', alignItems: 'center' },
+    calendarStatsRow: { flexDirection: 'row', alignItems: 'center' },
     content: { paddingVertical: 20 },
     sectionTitle: { fontSize: 14, fontWeight: 'bold', color: '#9ca3af', paddingHorizontal: 20, marginBottom: 15 },
     quickAccessContainer: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 20 },
@@ -426,6 +593,37 @@ const styles = StyleSheet.create({
     storyHintText: { fontSize: 11, color: 'rgba(209,213,219,0.9)' },
     storyCtaButton: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, backgroundColor: 'rgba(79,70,229,0.9)' },
     storyCtaText: { fontSize: 12, fontWeight: '600', color: Colors.white },
+    // Calendar Modal Styles
+    calendarModalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    calendarModalCard: { backgroundColor: Colors.white, borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, paddingBottom: 40 },
+    calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    calendarTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.darkGray },
+    calendarCloseBtn: { padding: 8 },
+    calendarToggle: { flexDirection: 'row', backgroundColor: '#f3f4f6', borderRadius: 12, padding: 4, marginBottom: 20 },
+    calendarToggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
+    calendarToggleBtnActive: { backgroundColor: Colors.primary.indigo },
+    calendarToggleText: { fontWeight: '600', color: '#6b7280' },
+    calendarToggleTextActive: { color: Colors.white },
+    calendarContent: { marginBottom: 20 },
+    calendarNavRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    calendarNavBtn: { padding: 8 },
+    calendarMonthText: { fontSize: 18, fontWeight: 'bold', color: Colors.darkGray },
+    calendarYearText: { fontSize: 24, fontWeight: 'bold', color: Colors.darkGray },
+    calendarDaysHeader: { flexDirection: 'row', marginBottom: 10 },
+    calendarDayName: { flex: 1, textAlign: 'center', fontSize: 12, fontWeight: '600', color: '#9ca3af' },
+    calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+    calendarDayCell: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center' },
+    calendarDay: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+    calendarDayToday: { backgroundColor: Colors.primary.indigo },
+    calendarDayText: { fontSize: 14, fontWeight: '500', color: Colors.darkGray },
+    calendarDayTextToday: { color: Colors.white, fontWeight: 'bold' },
+    calendarMonthsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+    calendarMonthCell: { width: '30%', paddingVertical: 20, borderRadius: 16, backgroundColor: '#f3f4f6', alignItems: 'center', marginBottom: 12 },
+    calendarMonthCellActive: { backgroundColor: Colors.primary.indigo },
+    calendarMonthName: { fontSize: 16, fontWeight: '600', color: Colors.darkGray },
+    calendarMonthNameActive: { color: Colors.white },
+    calendarEventsBtn: { backgroundColor: Colors.primary.indigo, paddingVertical: 16, borderRadius: 16, alignItems: 'center' },
+    calendarEventsBtnText: { color: Colors.white, fontSize: 16, fontWeight: 'bold' },
 });
 
 export default HomeScreen;

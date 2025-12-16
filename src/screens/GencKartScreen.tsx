@@ -23,16 +23,20 @@ const GencKartScreen = () => {
   const renderPartnerItem = (item: DiscountPartner) => {
     const Icon = item.icon; 
     return (
-        <TouchableOpacity style={styles.partnerCard} activeOpacity={0.9} onPress={() => navigation.navigate('PartnerDetail', { partnerId: item.id })}>
-            <View style={[styles.partnerIconContainer, { backgroundColor: item.bgColor }]}>
-                <Icon color={item.iconColor} size={24}/>
+        <TouchableOpacity 
+            style={[styles.partnerCard, isDark && { backgroundColor: '#1e293b' }]} 
+            activeOpacity={0.9} 
+            onPress={() => navigation.navigate('PartnerDetail', { partnerId: item.id })}
+        >
+            <View style={[styles.partnerIconContainer, { backgroundColor: item.bgColor }, isDark && { backgroundColor: '#334155' }]}>
+                <Icon color={isDark ? '#e2e8f0' : item.iconColor} size={24}/>
             </View>
             <View style={styles.partnerInfo}>
-                <Text style={styles.partnerName}>{item.name}</Text>
-                <Text style={styles.partnerOffer}>{item.offer}</Text>
-                <Text style={styles.partnerDesc}>{item.description}</Text>
+                <Text style={[styles.partnerName, isDark && { color: '#f8fafc' }]}>{item.name}</Text>
+                <Text style={[styles.partnerOffer, isDark && { color: '#818cf8' }]}>{item.offer}</Text>
+                <Text style={[styles.partnerDesc, isDark && { color: '#94a3b8' }]}>{item.description}</Text>
             </View>
-            <ArrowUpRight color={Colors.darkGray} size={24} />
+            <ArrowUpRight color={isDark ? '#94a3b8' : Colors.darkGray} size={24} />
         </TouchableOpacity>
     )
   };
@@ -44,8 +48,8 @@ const GencKartScreen = () => {
     >
         <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>ŞanlıGenç Kart</Text>
-                <Text style={styles.headerSubtitle}>Şehrin anahtarı cebinde!</Text>
+                <Text style={[styles.headerTitle, isDark && { color: '#f8fafc' }]}>ŞanlıGenç Kart</Text>
+                <Text style={[styles.headerSubtitle, isDark && { color: '#94a3b8' }]}>Şehrin anahtarı cebinde!</Text>
             </View>
 
             {/* Genç Kart */}
@@ -118,8 +122,8 @@ const GencKartScreen = () => {
 
             {/* Partner List */}
             <View style={styles.listHeader}>
-                <Text style={styles.sectionTitle}>Anlaşmalı Mekanlar</Text>
-                <Text style={styles.firsatCount}>{MOCK_PARTNERS.length} Fırsat</Text>
+                <Text style={[styles.sectionTitle, isDark && { color: '#f8fafc' }]}>Anlaşmalı Mekanlar</Text>
+                <Text style={[styles.firsatCount, isDark && { color: '#94a3b8' }]}>{MOCK_PARTNERS.length} Fırsat</Text>
             </View>
 
             <View style={styles.listContainer}>

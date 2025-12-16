@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ChevronRight, Bell, ShieldCheck, LogOut, User as UserIcon, X } from 'lucide-react-native';
+import { ChevronRight, Bell, ShieldCheck, LogOut, User as UserIcon, X, Calendar, MapPin, Star, Award, Settings, HelpCircle, Info } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { MOCK_USER } from '@/api/mockData';
 import { useThemeMode } from '@/context/ThemeContext';
@@ -26,6 +26,14 @@ const ProfileScreen = () => {
 
   const userInitial = (MOCK_USER.name?.charAt(0) ?? '').toUpperCase();
 
+  // Mock istatistikler
+  const stats = {
+    eventsAttended: 12,
+    favoriteStops: 3,
+    daysActive: 45,
+    profileCompletion: 75,
+  };
+
   const handleLogout = () => {
     navigation.reset({
       index: 0,
@@ -34,12 +42,12 @@ const ProfileScreen = () => {
   };
 
   const MenuItem = ({ label, icon, onPress, isLast, isDestructive }: { label: string, icon: React.ReactNode, onPress?: () => void, isLast?: boolean, isDestructive?: boolean }) => (
-    <TouchableOpacity style={[styles.menuItem, isLast && { borderBottomWidth: 0 }]} onPress={onPress}>
+    <TouchableOpacity style={[styles.menuItem, isLast && { borderBottomWidth: 0 }, isDark && { borderBottomColor: '#334155' }]} onPress={onPress}>
         <View style={styles.menuItemLeft}>
             {icon}
-            <Text style={[styles.menuItemText, isDestructive && { color: Colors.accent.rose }]}>{label}</Text>
+            <Text style={[styles.menuItemText, isDark && { color: '#f8fafc' }, isDestructive && { color: Colors.accent.rose }]}>{label}</Text>
         </View>
-      <ChevronRight color="#9ca3af" size={24} />
+      <ChevronRight color={isDark ? '#64748b' : '#9ca3af'} size={24} />
     </TouchableOpacity>
   );
 
@@ -73,78 +81,174 @@ const ProfileScreen = () => {
             {/* User Info Card (Glassmorphism) */}
             <View style={styles.userInfoWrapper}>
               <BlurView intensity={30} tint="light" style={styles.userInfoCard}>
-                <View style={styles.avatarContainer}>
-                  <Text style={styles.avatarInitial}>{userInitial}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.userName,
-                      isDark && { color: Colors.white },
-                    ]}
+                <View style={styles.avatarWrapper}>
+                  <LinearGradient
+                    colors={['#8b5cf6', '#ec4899', '#f59e0b']}
+                    style={styles.avatarGradientBorder}
                   >
-                    {MOCK_USER.name}
-                  </Text>
-                  <View style={styles.userMetaRow}>
-                    <Text style={styles.userStatus}>{MOCK_USER.status}</Text>
+                    <View style={styles.avatarContainer}>
+                      <Text style={styles.avatarInitial}>{userInitial}</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+                <View style={{ flex: 1, marginLeft: 15 }}>
+                  <View style={styles.userNameRow}>
+                    <Text
+                      style={[
+                        styles.userName,
+                        isDark && { color: Colors.white },
+                      ]}
+                    >
+                      {MOCK_USER.name}
+                    </Text>
+                    {MOCK_USER.isVerified && (
+                      <View style={styles.verifiedBadge}>
+                        <ShieldCheck color={Colors.white} size={14} fill={Colors.white} />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.userStatus, isDark && { color: 'rgba(255,255,255,0.7)' }]}>{MOCK_USER.status}</Text>
+                  <View style={styles.profileProgressContainer}>
+                    <View style={styles.profileProgressBar}>
+                      <View style={[styles.profileProgressFill, { width: `${stats.profileCompletion}%` }]} />
+                    </View>
+                    <Text style={styles.profileProgressText}>{stats.profileCompletion}% Tamamlandı</Text>
                   </View>
                 </View>
               </BlurView>
+            </View>
+
+            {/* İstatistik Kartları */}
+            <View style={styles.statsContainer}>
+              <TouchableOpacity 
+                style={[styles.statCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.statIconContainer, { backgroundColor: '#e0e7ff' }, isDark && { backgroundColor: '#334155' }]}>
+                  <Calendar color={Colors.primary.indigo} size={20} />
+                </View>
+                <Text style={[styles.statValue, isDark && { color: '#f8fafc' }]}>{stats.eventsAttended}</Text>
+                <Text style={[styles.statLabel, isDark && { color: '#94a3b8' }]}>Etkinlik</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.statCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('Main', { screen: 'Transport' })}
+              >
+                <View style={[styles.statIconContainer, { backgroundColor: '#dcfce7' }, isDark && { backgroundColor: '#334155' }]}>
+                  <MapPin color="#10b981" size={20} />
+                </View>
+                <Text style={[styles.statValue, isDark && { color: '#f8fafc' }]}>{stats.favoriteStops}</Text>
+                <Text style={[styles.statLabel, isDark && { color: '#94a3b8' }]}>Favori Durak</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.statCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.statIconContainer, { backgroundColor: '#fef3c7' }, isDark && { backgroundColor: '#334155' }]}>
+                  <Award color="#f59e0b" size={20} />
+                </View>
+                <Text style={[styles.statValue, isDark && { color: '#f8fafc' }]}>{stats.daysActive}</Text>
+                <Text style={[styles.statLabel, isDark && { color: '#94a3b8' }]}>Gün Aktif</Text>
+              </TouchableOpacity>
             </View>
           </LinearGradient>
         </View>
 
         {/* Verification Alert */}
         {!MOCK_USER.isVerified && (
-          <TouchableOpacity style={styles.alertCard} onPress={() => setModalVisible(true)} activeOpacity={0.9}>
-            <View style={styles.alertIconContainer}>
-              <ShieldCheck color={'#f59e0b'} size={24} />
+          <TouchableOpacity 
+            style={[styles.alertCard, isDark && { backgroundColor: '#422006', borderColor: '#78350f' }]} 
+            onPress={() => setModalVisible(true)} 
+            activeOpacity={0.9}
+          >
+            <View style={[styles.alertIconContainer, isDark && { backgroundColor: '#78350f' }]}>
+              <ShieldCheck color={isDark ? '#fbbf24' : '#f59e0b'} size={24} />
             </View>
-            <Text style={styles.alertTitle}>Hesabın doğrulanmadı</Text>
-            <Text style={styles.alertText}>
+            <Text style={[styles.alertTitle, isDark && { color: '#fcd34d' }]}>Hesabın doğrulanmadı</Text>
+            <Text style={[styles.alertText, isDark && { color: '#fde68a' }]}>
               Avantajlardan yararlanmak için hesabını doğrula.
             </Text>
-            <View style={styles.alertButton}>
-              <Text style={styles.alertButtonText}>Doğrula</Text>
+            <View style={[styles.alertButton, isDark && { backgroundColor: '#fbbf24' }]}>
+              <Text style={[styles.alertButtonText, isDark && { color: '#422006' }]}>Doğrula</Text>
             </View>
           </TouchableOpacity>
         )}
         
         {/* Account Info */}
-        <Text style={styles.sectionTitle}>Hesap Bilgileri</Text>
-        <View style={styles.menuContainer}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Ad Soyad</Text>
-            <Text style={styles.infoValue}>{MOCK_USER.name}</Text>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Hesap Bilgileri</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
+          <View style={[styles.infoRow, isDark && { borderBottomColor: '#334155' }]}>
+            <Text style={[styles.infoLabel, isDark && { color: '#94a3b8' }]}>Ad Soyad</Text>
+            <Text style={[styles.infoValue, isDark && { color: '#f8fafc' }]}>{MOCK_USER.name}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Doğum Yılı</Text>
-            <Text style={styles.infoValue}>{MOCK_USER.dob}</Text>
+          <View style={[styles.infoRow, isDark && { borderBottomColor: '#334155' }]}>
+            <Text style={[styles.infoLabel, isDark && { color: '#94a3b8' }]}>Doğum Yılı</Text>
+            <Text style={[styles.infoValue, isDark && { color: '#f8fafc' }]}>{MOCK_USER.dob}</Text>
           </View>
           <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.infoLabel}>Durum</Text>
-            <Text style={styles.infoValue}>{MOCK_USER.status}</Text>
+            <Text style={[styles.infoLabel, isDark && { color: '#94a3b8' }]}>Durum</Text>
+            <Text style={[styles.infoValue, isDark && { color: '#f8fafc' }]}>{MOCK_USER.status}</Text>
           </View>
         </View>
 
+        {/* Hızlı Erişim */}
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Hızlı Erişim</Text>
+        <View style={styles.quickAccessContainer}>
+          <TouchableOpacity 
+            style={[styles.quickAccessCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Main', { screen: 'Transport' })}
+          >
+            <View style={[styles.quickAccessIcon, { backgroundColor: '#e0e7ff' }, isDark && { backgroundColor: '#334155' }]}>
+              <MapPin color={Colors.primary.indigo} size={24} />
+            </View>
+            <Text style={[styles.quickAccessText, isDark && { color: '#f8fafc' }]}>Favori Duraklar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.quickAccessCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Events')}
+          >
+            <View style={[styles.quickAccessIcon, { backgroundColor: '#fee2e2' }, isDark && { backgroundColor: '#334155' }]}>
+              <Calendar color="#ef4444" size={24} />
+            </View>
+            <Text style={[styles.quickAccessText, isDark && { color: '#f8fafc' }]}>Etkinliklerim</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.quickAccessCard, isDark && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Main', { screen: 'GencKart' })}
+          >
+            <View style={[styles.quickAccessIcon, { backgroundColor: '#dcfce7' }, isDark && { backgroundColor: '#334155' }]}>
+              <Star color="#10b981" size={24} fill="#10b981" />
+            </View>
+            <Text style={[styles.quickAccessText, isDark && { color: '#f8fafc' }]}>Genç Kart</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Settings Group */}
-        <Text style={styles.sectionTitle}>Ayarlar</Text>
-        <View style={styles.menuContainer}>
-          <MenuItem label="Kişisel Bilgiler" icon={<UserIcon color="#6b7280" size={24} />} />
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Ayarlar</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
+          <MenuItem label="Kişisel Bilgiler" icon={<UserIcon color={isDark ? '#94a3b8' : '#6b7280'} size={24} />} />
           <MenuItem
             label="Bildirimler"
-            icon={<Bell color="#6b7280" size={24} />}
+            icon={<Bell color={isDark ? '#94a3b8' : '#6b7280'} size={24} />}
             onPress={() => navigation.navigate('Notifications')}
             isLast
           />
         </View>
 
-        <Text style={styles.sectionTitle}>Bildirim Tercihleri</Text>
-        <View style={styles.menuContainer}>
-          <View style={styles.switchRow}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Bildirim Tercihleri</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
+          <View style={[styles.switchRow, isDark && { borderBottomColor: '#334155' }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>Etkinlik bildirimleri</Text>
-              <Text style={styles.switchSubtitle}>Yeni etkinlikler ve hatırlatmalar</Text>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>Etkinlik bildirimleri</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>Yeni etkinlikler ve hatırlatmalar</Text>
             </View>
             <Switch
               value={eventNotificationsEnabled}
@@ -153,10 +257,10 @@ const ProfileScreen = () => {
               trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
             />
           </View>
-          <View style={styles.switchRow}>
+          <View style={[styles.switchRow, isDark && { borderBottomColor: '#334155' }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>İndirim bildirimleri</Text>
-              <Text style={styles.switchSubtitle}>Anlaşmalı mekân ve kampanyalar</Text>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>İndirim bildirimleri</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>Anlaşmalı mekân ve kampanyalar</Text>
             </View>
             <Switch
               value={discountNotificationsEnabled}
@@ -167,8 +271,8 @@ const ProfileScreen = () => {
           </View>
           <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>Konum bazlı bildirimler</Text>
-              <Text style={styles.switchSubtitle}>Yakınındaki indirimleri haber ver</Text>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>Konum bazlı bildirimler</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>Yakınındaki indirimleri haber ver</Text>
             </View>
             <Switch
               value={locationNotificationsEnabled}
@@ -179,12 +283,12 @@ const ProfileScreen = () => {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Veri Gizliliği</Text>
-        <View style={styles.menuContainer}>
-          <View style={styles.switchRow}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Veri Gizliliği</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
+          <View style={[styles.switchRow, isDark && { borderBottomColor: '#334155' }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>Analiz verilerini paylaş</Text>
-              <Text style={styles.switchSubtitle}>Uygulamanın geliştirilmesine anonim katkı sağlar</Text>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>Analiz verilerini paylaş</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>Uygulamanın geliştirilmesine anonim katkı sağlar</Text>
             </View>
             <Switch
               value={analyticsEnabled}
@@ -193,10 +297,10 @@ const ProfileScreen = () => {
               trackColor={{ false: '#d1d5db', true: '#c7d2fe' }}
             />
           </View>
-          <View style={styles.switchRow}>
+          <View style={[styles.switchRow, isDark && { borderBottomColor: '#334155' }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>Kişiselleştirilmiş içerik</Text>
-              <Text style={styles.switchSubtitle}>İlgi alanlarına göre öneriler göster</Text>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>Kişiselleştirilmiş içerik</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>İlgi alanlarına göre öneriler göster</Text>
             </View>
             <Switch
               value={personalizationEnabled}
@@ -206,24 +310,24 @@ const ProfileScreen = () => {
             />
           </View>
           <TouchableOpacity
-            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            style={[styles.menuItem, { borderBottomWidth: 0 }, isDark && { borderBottomColor: '#334155' }]}
             onPress={() => setPrivacyModalVisible(true)}
             activeOpacity={0.8}
           >
             <View style={styles.menuItemLeft}>
-              <ShieldCheck color="#6b7280" size={24} />
-              <Text style={styles.menuItemText}>Gizlilik Politikası</Text>
+              <ShieldCheck color={isDark ? '#94a3b8' : '#6b7280'} size={24} />
+              <Text style={[styles.menuItemText, isDark && { color: '#f8fafc' }]}>Gizlilik Politikası</Text>
             </View>
-            <ChevronRight color="#9ca3af" size={24} />
+            <ChevronRight color={isDark ? '#64748b' : '#9ca3af'} size={24} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>Görünüm</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Görünüm</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
           <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
             <View style={styles.switchTextWrapper}>
-              <Text style={styles.switchTitle}>Karanlık Mod</Text>
-              <Text style={styles.switchSubtitle}>
+              <Text style={[styles.switchTitle, isDark && { color: '#f8fafc' }]}>Karanlık Mod</Text>
+              <Text style={[styles.switchSubtitle, isDark && { color: '#94a3b8' }]}>
                 Uygulamayı koyu tema ile kullan
               </Text>
             </View>
@@ -236,8 +340,23 @@ const ProfileScreen = () => {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Diğer</Text>
-        <View style={styles.menuContainer}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Yardım & Destek</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
+          <MenuItem
+            label="Yardım Merkezi"
+            icon={<HelpCircle color={isDark ? '#94a3b8' : '#6b7280'} size={24} />}
+            onPress={() => {}}
+          />
+          <MenuItem
+            label="Hakkında"
+            icon={<Info color={isDark ? '#94a3b8' : '#6b7280'} size={24} />}
+            onPress={() => {}}
+            isLast
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, isDark && { color: '#94a3b8' }]}>Diğer</Text>
+        <View style={[styles.menuContainer, isDark && { backgroundColor: '#1e293b' }]}>
           <MenuItem
             label="Çıkış Yap"
             icon={<LogOut color={Colors.accent.rose} size={24} />}
@@ -256,15 +375,16 @@ const ProfileScreen = () => {
           onRequestClose={() => setModalVisible(!modalVisible)}
         >
           <View style={styles.modalBackdrop}>
-            <View style={styles.modalView}>
+            <View style={[styles.modalView, isDark && { backgroundColor: '#1e293b' }]}>
               <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                <X color="#9ca3af" size={24} />
+                <X color={isDark ? '#94a3b8' : '#9ca3af'} size={24} />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>TC Kimlik Doğrulama</Text>
-              <Text style={styles.modalSubtitle}>Avantajlardan yararlanmak için kimlik bilgilerinizi doğrulamanız gerekmektedir.</Text>
+              <Text style={[styles.modalTitle, isDark && { color: '#f8fafc' }]}>TC Kimlik Doğrulama</Text>
+              <Text style={[styles.modalSubtitle, isDark && { color: '#94a3b8' }]}>Avantajlardan yararlanmak için kimlik bilgilerinizi doğrulamanız gerekmektedir.</Text>
               <TextInput
                 placeholder="TC Kimlik Numaranız"
-                style={styles.modalInput}
+                placeholderTextColor={isDark ? '#64748b' : '#9ca3af'}
+                style={[styles.modalInput, isDark && { backgroundColor: '#334155', color: '#f8fafc' }]}
                 keyboardType="numeric"
                 maxLength={11}
               />
@@ -283,12 +403,12 @@ const ProfileScreen = () => {
           onRequestClose={() => setPrivacyModalVisible(!privacyModalVisible)}
         >
           <View style={styles.modalBackdrop}>
-            <View style={styles.modalView}>
+            <View style={[styles.modalView, isDark && { backgroundColor: '#1e293b' }]}>
               <TouchableOpacity style={styles.closeButton} onPress={() => setPrivacyModalVisible(false)}>
-                <X color="#9ca3af" size={24} />
+                <X color={isDark ? '#94a3b8' : '#9ca3af'} size={24} />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>Veri Gizliliği</Text>
-              <Text style={styles.modalSubtitle}>
+              <Text style={[styles.modalTitle, isDark && { color: '#f8fafc' }]}>Veri Gizliliği</Text>
+              <Text style={[styles.modalSubtitle, isDark && { color: '#94a3b8' }]}>
                 Uygulama; konum, kullanım ve tercih bilgilerini yalnızca hizmetleri
                 iyileştirmek ve sana daha uygun içerikler göstermek için işler.
                 Ayarlardan analiz ve kişiselleştirme tercihlerini dilediğin zaman
@@ -374,6 +494,136 @@ const styles = StyleSheet.create({
   userStatus: {
     color: '#6b7280',
     fontSize: 14,
+    marginTop: 2,
+  },
+  avatarWrapper: {
+    marginRight: 0,
+  },
+  avatarGradientBorder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  verifiedBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.primary.indigo,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileProgressContainer: {
+    marginTop: 12,
+  },
+  profileProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  profileProgressFill: {
+    height: '100%',
+    backgroundColor: Colors.white,
+    borderRadius: 2,
+  },
+  profileProgressText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginTop: 20,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#171717',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  statIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.darkGray,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  quickAccessContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickAccessCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#171717',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  quickAccessIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quickAccessText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.darkGray,
+    textAlign: 'center',
   },
   alertCard: {
     backgroundColor: '#fffbeb',

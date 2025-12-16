@@ -62,6 +62,8 @@ type MessageBubbleProps = {
 };
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ item }) => {
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   const slideAnim = useRef(new Animated.Value(10)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -98,18 +100,35 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ item }) => {
             <Bot color={Colors.primary.indigo} size={20} />
           </View>
         )}
-        <LinearGradient
-          colors={
-            item.sender === 'user'
-              ? [Colors.primary.indigo, Colors.primary.violet]
-              : ['#ffffff', '#f9fafb']
-          }
-          style={[styles.bubble, item.sender === 'user' ? styles.userBubble : styles.botBubble]}
-        >
-          <Text style={item.sender === 'user' ? styles.userBubbleText : styles.botBubbleText}>
-            {item.text}
-          </Text>
-        </LinearGradient>
+        {item.sender === 'user' ? (
+          <LinearGradient
+            colors={[Colors.primary.indigo, Colors.primary.violet]}
+            style={[styles.bubble, styles.userBubble]}
+          >
+            <Text style={styles.userBubbleText}>
+              {item.text}
+            </Text>
+          </LinearGradient>
+        ) : (
+          <View style={[
+            styles.bubble, 
+            styles.botBubble,
+            isDark && { 
+              backgroundColor: '#334155',
+              borderWidth: 1,
+              borderColor: '#475569',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              elevation: 3,
+            }
+          ]}>
+            <Text style={isDark ? styles.botBubbleTextDark : styles.botBubbleText}>
+              {item.text}
+            </Text>
+          </View>
+        )}
       </View>
     </Animated.View>
   );
@@ -265,7 +284,7 @@ const AssistantScreen = () => {
       <View
         style={[
           styles.bubblePage,
-          isDark && { backgroundColor: '#020617', shadowOpacity: 0.25 },
+          isDark && { backgroundColor: '#1e293b', shadowOpacity: 0.25 },
         ]}
       >
         <KeyboardAvoidingView
@@ -275,7 +294,7 @@ const AssistantScreen = () => {
         >
           {/* Header */}
           <View style={styles.header}>
-              <Text style={styles.headerTitle}>ŞanlıAsistan</Text>
+              <Text style={[styles.headerTitle, isDark && { color: '#f8fafc' }]}>ŞanlıAsistan</Text>
               <View style={{flexDirection: 'row', alignItems: 'center', gap: 5}}>
                  <Activity size={14} color="green" />
                  <Text style={styles.headerSubtitle}>
@@ -294,13 +313,13 @@ const AssistantScreen = () => {
               {QUICK_ACTIONS.map((action) => (
                 <TouchableOpacity
                   key={action.id}
-                  style={styles.quickStartChip}
+                  style={[styles.quickStartChip, isDark && { backgroundColor: '#334155' }]}
                   onPress={() => sendUserMessage(action.text)}
                   activeOpacity={0.9}
                 >
                   <View style={styles.quickStartChipInner}>
-                    <action.icon size={18} color={Colors.primary.indigo} />
-                    <Text style={styles.quickStartText}>{action.label}</Text>
+                    <action.icon size={18} color={isDark ? '#e2e8f0' : Colors.primary.indigo} />
+                    <Text style={[styles.quickStartText, isDark && { color: '#f8fafc' }]}>{action.label}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -331,18 +350,18 @@ const AssistantScreen = () => {
               <View style={styles.botAvatar}>
                 <Bot color={Colors.primary.indigo} size={20} />
               </View>
-              <View style={[styles.bubble, styles.botBubble, styles.typingBubble]}>
-                <Text style={styles.typingText}>{typingDots}</Text>
+              <View style={[styles.bubble, styles.botBubble, styles.typingBubble, isDark && { backgroundColor: '#334155' }]}>
+                <Text style={[styles.typingText, isDark && { color: '#f8fafc' }]}>{typingDots}</Text>
               </View>
             </View>
           )}
 
           {/* Input */}
-          <View style={styles.inputContainer}>
+          <View style={[styles.inputContainer, isDark && { borderTopColor: '#334155' }]}>
             <TextInput
               placeholder="Mesajını buraya yaz..."
-              style={styles.input}
-              placeholderTextColor="#9ca3af"
+              style={[styles.input, isDark && { backgroundColor: '#334155', color: '#f8fafc' }]}
+              placeholderTextColor={isDark ? '#94a3b8' : '#9ca3af'}
               value={inputText}
               onChangeText={setInputText}
               onSubmitEditing={() => sendUserMessage(inputText)}
@@ -468,6 +487,11 @@ const styles = StyleSheet.create({
   botBubbleText: {
     color: Colors.darkGray,
     fontSize: 16,
+  },
+  botBubbleTextDark: {
+    color: '#f8fafc',
+    fontSize: 16,
+    fontWeight: '400',
   },
   typingBubble: {
     minWidth: 50,
